@@ -16,6 +16,8 @@
 #include "Utils.h"
 #include "VirtualInfluence.h"
 
+#define OUTER_RING_INFLUENCE_FRACTION 0.2
+
 #define FILEPATH "C:\\dev\\MP\\Black\\Influence.h"
 
 float Influence::CalculatePlayerInfluence(const MapCoords& pos, GPlayer* player, int param_3, INFL_CALC_TYPE type,
@@ -74,7 +76,7 @@ bool32_t Influence::IsInAntiInfluence(const MapCoords& pos, GPlayer* player)
 {
 	FOREACH_LH_LIST_HEAD_SAFE(InfluenceRing, ring, GGame::g_game->GameLists.InfluenceRingList)
 	{
-		if (ring->GetPlayer() == player && ring->field_0x3c != 0 && ring->IsInInfluence(pos))
+		if (ring->GetPlayer() == player && ring->Anti != 0 && ring->IsInInfluence(pos))
 		{
 			return true;
 		}
@@ -84,19 +86,19 @@ bool32_t Influence::IsInAntiInfluence(const MapCoords& pos, GPlayer* player)
 
 float Influence::CalculateInfluenceOnRange(float distance, float radius, int param_3)
 {
-	float inner = GInfluenceInfo::Info.field_0x10 * radius;
+	float inner = GInfluenceInfo::Info.FullInfluenceFraction * radius;
 	if (distance <= inner)
 	{
 		return 1.0f;
 	}
-	float outer = (GInfluenceInfo::Info.field_0x14 + GInfluenceInfo::Info.field_0x10) * radius;
+	float outer = (GInfluenceInfo::Info.FalloffFraction + GInfluenceInfo::Info.FullInfluenceFraction) * radius;
 	if (distance <= outer)
 	{
-		return (1.0f - (distance - inner) / (outer - inner)) * (1.0f - GInfluenceInfo::Info.field_0x18);
+		return (1.0f - (distance - inner) / (outer - inner)) * (1.0f - GInfluenceInfo::Info.FalloffLoss);
 	}
 	if (distance < radius)
 	{
-		return (1.0f - (distance - outer) / (radius - outer)) * 0.2;
+		return (1.0f - (distance - outer) / (radius - outer)) * OUTER_RING_INFLUENCE_FRACTION;
 	}
 	return 0.0f;
 }
@@ -130,7 +132,7 @@ InfluenceRing::InfluenceRing(const MapCoords& coords, GPlayer* player, float rad
 	this->player = player;
 	Influence = radius;
 	GGame::g_game->GameLists.InfluenceRingList.AddToFirst(this);
-	field_0x3c = anti;
+	Anti = anti;
 }
 
 InfluenceRing::InfluenceRing(GameThingWithPos* thing, GPlayer* player, float radius, int anti)
@@ -140,7 +142,7 @@ InfluenceRing::InfluenceRing(GameThingWithPos* thing, GPlayer* player, float rad
 	this->player = player;
 	Influence = radius;
 	GGame::g_game->GameLists.InfluenceRingList.AddToFirst(this);
-	field_0x3c = anti;
+	Anti = anti;
 }
 
 void InfluenceRing::ToBeDeleted(int param_1)
@@ -155,7 +157,7 @@ float InfluenceRing::CalculateInfluence(const MapCoords& pos, GPlayer* player, i
 	{
 		return 0.0f;
 	}
-	if (field_0x3c != 0)
+	if (Anti != 0)
 	{
 		return 0.0f;
 	}
@@ -266,7 +268,7 @@ uint32_t InfluenceRing::Save(GameOSFile& file)
 		file.WritePtr(dynamic_cast<GameThingWithPos*>(info.GetBase()));
 		file.WritePtr(player.Get());
 		file.WriteSafe((uint32_t&)Influence);
-		file.WriteSafe((uint32_t&)field_0x3c);
+		file.WriteSafe((uint32_t&)Anti);
 		return 1;
 	}
 	return 0;
@@ -281,7 +283,7 @@ uint32_t InfluenceRing::Load(GameOSFile& file)
 		info.Set(thing);
 		file.ReadPtr((GameThing**)&player);
 		file.ReadSafe((uint32_t&)Influence);
-		file.ReadSafe((uint32_t&)field_0x3c);
+		file.ReadSafe((uint32_t&)Anti);
 		return 1;
 	}
 	return 0;

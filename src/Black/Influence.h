@@ -59,7 +59,7 @@ public:
 	BaseInfo                  info;
 	LHPTR<GPlayer>            player;
 	float                     Influence;
-	int                       field_0x3c;
+	int                       Anti;
 	LHListNode<InfluenceRing> next;
 
 	// Override methods

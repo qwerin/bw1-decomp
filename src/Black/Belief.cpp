@@ -10,6 +10,12 @@
 #include "Utils.h"
 #include "ValueSpinner.h"
 
+#define DEFAULT_BELIEF_CAP         10.0f
+#define BELIEF_LOSS_DRAW_THRESHOLD 0.005
+#define BELIEF_DISTANCE_THRESHOLD  -0.9f
+#define BELIEF_DIFFERENCE_FLOOR    -9999.0f
+#define VALUE_SPINNER_RISE_SPEED   10.0f
+
 GBeliefInfo GBeliefInfo::Info;
 
 GBaseInfo* GBeliefInfo::GetBaseInfo(uint32_t& param_1)
@@ -23,10 +29,10 @@ void GBelief::Init(Town* town)
 	for (int i = 0; i < _PLAYER_NAME_COUNT; i++)
 	{
 		BeliefInPlayer[i] = 0.0f;
-		BeliefInPlayerMax[i] = 10.0f;
-		field_0xc8[i] = 0.0f;
-		field_0xa8[i] = 0.0f;
-		field_0x48[i] = 0;
+		BeliefInPlayerMax[i] = DEFAULT_BELIEF_CAP;
+		BeliefAddedTotal[i] = 0.0f;
+		BeliefLossPending[i] = 0.0f;
+		LastBeliefAddedTurn[i] = 0;
 	}
 	GPlayer* neutral = &GGame::g_game->players[GGame::g_game->NeutralPlayerIndex];
 	float    neutralBelief = town->GetBeliefInNeutralPlayer();
@@ -52,11 +58,11 @@ void GBelief::AddToBelief(GPlayer* player, float amount, GameThingWithPos* objec
                           GUIDANCE_ALIGNMENT alignment)
 {
 	unsigned long playerNumber = player->GetPlayerNumber();
-	field_0xc8[playerNumber] += amount;
-	field_0x28[playerNumber] += amount;
+	BeliefAddedTotal[playerNumber] += amount;
+	BeliefGained[playerNumber] += amount;
 	if (amount != 0.0f)
 	{
-		field_0x48[playerNumber] = GGame::g_game->data.GameTurn;
+		LastBeliefAddedTurn[playerNumber] = GGame::g_game->data.GameTurn;
 	}
 	if (object != NULL)
 	{
@@ -74,24 +80,24 @@ void GBelief::ReduceBelief(GPlayer* player, Town* town, float amount)
 	BeliefInPlayer[playerNumber] -= amount;
 	if (town->town_centre != NULL)
 	{
-		field_0xa8[playerNumber] += amount;
-		if (field_0xa8[playerNumber] > 0.005)
+		BeliefLossPending[playerNumber] += amount;
+		if (BeliefLossPending[playerNumber] > BELIEF_LOSS_DRAW_THRESHOLD)
 		{
 			GameThingWithPos* centre = town->town_centre;
-			DrawBelief(-field_0xa8[playerNumber], centre, GGame::g_game->GetPlayer(playerNumber));
-			field_0xa8[playerNumber] = 0.0f;
+			DrawBelief(-BeliefLossPending[playerNumber], centre, GGame::g_game->GetPlayer(playerNumber));
+			BeliefLossPending[playerNumber] = 0.0f;
 		}
 	}
 }
 
 float GBelief::fn_00438060(unsigned long player_number)
 {
-	return field_0x88[player_number];
+	return BeliefInPlayerDelta[player_number];
 }
 
 float GBelief::DistanceChangeToBelief(float param_1, float param_2)
 {
-	return GUtils::SigmoidThreshold(-0.9f, -(param_1 / param_2));
+	return GUtils::SigmoidThreshold(BELIEF_DISTANCE_THRESHOLD, -(param_1 / param_2));
 }
 
 void GBelief::AddToBoredomMultiplier(Reaction* reaction, float amount)
@@ -117,7 +123,7 @@ float GBelief::GetBeliefNeededToConvert(GPlayer* player, Town* town)
 {
 	if (town->GetPlayer() == player)
 	{
-		float best = -9999.0f;
+		float best = BELIEF_DIFFERENCE_FLOOR;
 		float result = 0.0f;
 		for (unsigned long i = 0; i < _PLAYER_NAME_COUNT; i++)
 		{
@@ -185,5 +191,5 @@ float GBelief::GetPercentCloseOtherPlayer(GPlayer* player)
 
 void ValueSpinner::UpdatePosition(float time)
 {
-	point.y += time * 10.0f;
+	point.y += time * VALUE_SPINNER_RISE_SPEED;
 }

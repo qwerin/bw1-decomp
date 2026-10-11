@@ -2,6 +2,9 @@
 #include "MapCellConstants.h"
 #include "Map.h"
 
+#define MAP_CELL_OUTLINE_HEIGHT 0.3f
+#define MAP_CELL_COLOUR_MAX     0xff
+
 #include <stdio.h> /* For sprintf */
 
 #include <Lionhead/LH3DLib/development/LH3DColor.h>
@@ -262,16 +265,16 @@ void MapCell::ShowMapCell(LH3DColor* color)
 	LH3DColor white;
 	if (color == NULL)
 	{
-		white.b = 0xff;
-		white.g = 0xff;
-		white.r = 0xff;
-		white.a = 0xff;
+		white.b = MAP_CELL_COLOUR_MAX;
+		white.g = MAP_CELL_COLOUR_MAX;
+		white.r = MAP_CELL_COLOUR_MAX;
+		white.a = MAP_CELL_COLOUR_MAX;
 		color = &white;
 	}
 	LH3DColor lineColor = *color;
 
 	float   z = GetZ() * MetresPerMapCell;
-	LHPoint corners[4];
+	LHPoint corners[MAP_CELL_CORNER_COUNT];
 	corners[0].x = GetX() * MetresPerMapCell;
 	corners[0].y = 0.0f;
 	corners[0].z = z;
@@ -282,10 +285,10 @@ void MapCell::ShowMapCell(LH3DColor* color)
 	corners[3].z = corners[2].z = MetresPerMapCell + z;
 	corners[3].x = corners[0].x;
 	corners[3].y = 0.0f;
-	corners[0].y = LH3DIsland::GetAltitude(corners[0]) + 0.3f;
-	corners[1].y = LH3DIsland::GetAltitude(corners[1]) + 0.3f;
-	corners[2].y = LH3DIsland::GetAltitude(corners[2]) + 0.3f;
-	corners[3].y = LH3DIsland::GetAltitude(corners[3]) + 0.3f;
+	corners[0].y = LH3DIsland::GetAltitude(corners[0]) + MAP_CELL_OUTLINE_HEIGHT;
+	corners[1].y = LH3DIsland::GetAltitude(corners[1]) + MAP_CELL_OUTLINE_HEIGHT;
+	corners[2].y = LH3DIsland::GetAltitude(corners[2]) + MAP_CELL_OUTLINE_HEIGHT;
+	corners[3].y = LH3DIsland::GetAltitude(corners[3]) + MAP_CELL_OUTLINE_HEIGHT;
 	LH3DLine::AddLine(corners[0], corners[1], &lineColor, NULL);
 	LH3DLine::AddLine(corners[1], corners[2], &lineColor, NULL);
 	LH3DLine::AddLine(corners[2], corners[3], &lineColor, NULL);

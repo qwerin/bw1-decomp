@@ -21,6 +21,7 @@ struct MapCellIterator;
 enum
 {
 	MAP_CELLS_PER_SIDE = 0x200,
+	MAP_CELL_CORNER_COUNT = 4,
 };
 
 struct MapCell

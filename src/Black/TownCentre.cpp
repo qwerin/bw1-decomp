@@ -31,7 +31,9 @@
 #endif
 
 // Fixed-point factor for the angle, scale and worship speed in the script command written by SaveObject.
-#define TOWN_CENTRE_SCRIPT_SCALE 1000
+#define TOWN_CENTRE_SCRIPT_SCALE     1000
+#define TOWN_CENTRE_NO_TOWN_ID       -1
+#define TOWN_CENTRE_REPLACEMENT_WOOD 1
 
 TownCentre::TownCentre(const MapCoords& coords, const GAbodeInfo* info, Town* town, float y_angle, float scale,
                        float food, int wood)
@@ -254,7 +256,8 @@ PlannedTownCentre* PlannedTownCentre::Create(const MapCoords& coords, const GAbo
 MultiMapFixed* PlannedTownCentre::CreatePlannedNoFixedCheck(float food)
 {
 	float       yAngle = YAngle;
-	TownCentre* centre = TownCentre::Create(Pos, GetInfo(), GetTown(), yAngle, GetScale(), food, 1);
+	TownCentre* centre =
+		TownCentre::Create(Pos, GetInfo(), GetTown(), yAngle, GetScale(), food, TOWN_CENTRE_REPLACEMENT_WOOD);
 	if (centre != NULL)
 	{
 		PostCreatePlanned(*centre);
@@ -402,7 +405,7 @@ uint32_t TownCentre::SaveObject(LHOSFile& param_1, const MapCoords* param_2)
 	if (saved == 1)
 	{
 		MapCoords    relative = (param_2 != NULL) ? (Pos - *param_2) : Pos;
-		int          townId = (GetTown() != NULL) ? GetTown()->ID : -1;
+		int          townId = (GetTown() != NULL) ? GetTown()->ID : TOWN_CENTRE_NO_TOWN_ID;
 		TotemStatue* totem = totem_statue.Get();
 		float        scale = GetScale();
 		float        yAngle = GetYAngle();

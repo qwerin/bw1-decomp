@@ -14,9 +14,9 @@ class Base;
 class GInfluenceInfo : public GBaseInfo
 {
 public:
-	float field_0x10;
-	float field_0x14;
-	float field_0x18;
+	float FullInfluenceFraction;
+	float FalloffFraction;
+	float FalloffLoss;
 
 	// BW1W120 00d17cc0
 	static GInfluenceInfo Info;
@@ -30,7 +30,7 @@ public:
 
 	// TODO(#377): The original declared this class in Influence.h.
 	// Out of line: LoadBinary at 0042f700, Load at 0042f6b0.
-	INFO_DATA_BLOCK(field_0x10, field_0x18)
+	INFO_DATA_BLOCK(FullInfluenceFraction, FalloffLoss)
 	INFO_ROOT_LOADERS("Influence.h", 19)
 };
 

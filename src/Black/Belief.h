@@ -24,12 +24,12 @@ public:
 	static void ProcessOncePerTurn();
 
 	float    BeliefInPlayer[_PLAYER_NAME_COUNT];
-	float    field_0x28[_PLAYER_NAME_COUNT];
-	uint32_t field_0x48[_PLAYER_NAME_COUNT];
+	float    BeliefGained[_PLAYER_NAME_COUNT];
+	uint32_t LastBeliefAddedTurn[_PLAYER_NAME_COUNT];
 	float    BeliefInPlayerMax[_PLAYER_NAME_COUNT];
-	float    field_0x88[_PLAYER_NAME_COUNT];
-	float    field_0xa8[_PLAYER_NAME_COUNT];
-	float    field_0xc8[_PLAYER_NAME_COUNT];
+	float    BeliefInPlayerDelta[_PLAYER_NAME_COUNT];
+	float    BeliefLossPending[_PLAYER_NAME_COUNT];
+	float    BeliefAddedTotal[_PLAYER_NAME_COUNT];
 	float    BoredomMultiplier[NUM_REACTION_FUNCTIONS];
 	float    field_0x18c[0x11];
 
