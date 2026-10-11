@@ -6,6 +6,8 @@
 
 #include <chlasm/Enum.h> /* For enum OBJECT_TYPE */
 
+#include <Lionhead/LHLib/ver5.0/LHListHead.h> /* For LHListHead */
+
 #include "Base.h"      /* For struct Base */
 #include "MapCoords.h" /* For enum COLLIDE_TYPE */
 
@@ -13,7 +15,13 @@
 
 class Fixed;
 class Object;
+struct LH3DColor;
 struct MapCellIterator;
+
+enum
+{
+	MAP_CELLS_PER_SIDE = 0x200,
+};
 
 struct MapCell
 {
@@ -24,6 +32,18 @@ struct MapCell
 
 	// BW1W120 00601510 BW1M119 0100cb60
 	static bool32_t DoesObjectTypeCountAsFixed(OBJECT_TYPE type);
+
+	// Constructors
+
+	// BW1W120 inlined BW1M119 01560980
+	MapCell()
+	{
+		FirstObjectFixed = NULL;
+		FirstObjectMobile = NULL;
+	}
+
+	// BW1W120 00601150 BW1M119 01568ee0
+	~MapCell();
 
 	// Non-virtual methods
 
@@ -43,8 +63,16 @@ struct MapCell
 	Fixed* FindFixedOnMap(Object* param_1);
 	// BW1W120 inlined BW1M119 013dcd10
 	MapCellIterator GetFirstIterator() const;
+	// BW1W120 00601880 BW1M119 015687d0
+	void ShowMapCell(LH3DColor* color);
 	// BW1W120 00601bc0 BW1M119 0111edf0
 	int Collide(COLLIDE_TYPE type);
+	// BW1W120 00601bd0 BW1M119 010345f0
+	int Collide();
+	// BW1W120 00601e00 BW1M119 0102d430
+	bool32_t InBounds() const;
+	// BW1W120 00601ea0 BW1M119 01301820
+	bool32_t IsFixed();
 };
 
 struct MapCellIterator
@@ -82,42 +110,33 @@ class GMap : public Base
 {
 public:
 	// BW1W120 006014c0 BW1M119 011c6cb0
-	bool32_t Init(unsigned long x_size, unsigned long z_size, unsigned long flags);
-	// BW1W120 00601820 BW1M119 01568560
-	void     CalculateMapInfluence();
-	uint8_t  Dirty : 1; /* 0x8 */
-	uint8_t  Initialised : 1;
-	uint8_t  field_0x9;
-	uint8_t  field_0xa;
-	uint8_t  field_0xb;
-	uint32_t CellExtentZx[0x2];
-	uint32_t field_0x14;
-	uint32_t field_0x18;
-	uint32_t field_0x1c;
-	uint32_t field_0x20;
-	uint32_t field_0x24;
-	uint32_t field_0x28;
-	uint32_t field_0x2c;
-	uint32_t field_0x30;
-	uint32_t field_0x34;
-	uint32_t field_0x38;
-	uint8_t  field_0x3c;
-	uint8_t  field_0x3d;
-	uint8_t  field_0x3e;
-	uint8_t  field_0x3f;
-	uint32_t field_0x40;
-	MapCell  cells[0x200][0x200];
-	uint16_t Count0x200044;
-	uint8_t  field_0x200046;
-	uint8_t  field_0x200047;
-	uint8_t  field_0x200048;
-	uint8_t  field_0x200049;
-	uint8_t  field_0x20004a;
-	uint8_t  field_0x20004b;
-	uint8_t  field_0x20004c;
-	uint8_t  field_0x20004d;
-	uint8_t  field_0x20004e;
-	uint8_t  field_0x20004f;
+	bool32_t         Init(unsigned long x_size, unsigned long z_size, unsigned long flags);
+	uint8_t          Dirty : 1; /* 0x8 */
+	uint8_t          Initialised : 1;
+	uint8_t          field_0x9;
+	uint8_t          field_0xa;
+	uint8_t          field_0xb;
+	uint32_t         CellExtentZx[0x2];
+	uint32_t         field_0x14;
+	uint32_t         field_0x18;
+	uint32_t         field_0x1c;
+	uint32_t         field_0x20;
+	uint32_t         field_0x24;
+	uint32_t         field_0x28;
+	uint32_t         field_0x2c;
+	uint32_t         field_0x30;
+	uint32_t         field_0x34;
+	uint32_t         field_0x38;
+	uint8_t          field_0x3c;
+	uint8_t          field_0x3d;
+	uint8_t          field_0x3e;
+	uint8_t          field_0x3f;
+	uint32_t         field_0x40;
+	MapCell          cells[MAP_CELLS_PER_SIDE][MAP_CELLS_PER_SIDE];
+	uint16_t         Count0x200044;
+	uint8_t          field_0x200046;
+	uint8_t          field_0x200047;
+	LHListHead<Base> field_0x200048;
 
 	// Override methods
 
@@ -133,6 +152,8 @@ public:
 
 	// BW1W120 006013d0 BW1M119 01562a20
 	void Clean();
+	// BW1W120 00601820 BW1M119 01568560
+	void CalculateMapInfluence();
 	// BW1W120 006016d0 BW1M119 0155b770
 	void UpdateControlMap();
 	// BW1W120 00601850 BW1M119 01090d60
