@@ -16,6 +16,11 @@
 
 #define EDITOR_ICON_TEXT_SIZE 0x100
 
+enum
+{
+	EDITOR_ICON_FLAG_COPY_TEXT = 2
+};
+
 // Forward Declares
 
 class EditorIconPlace;
@@ -26,8 +31,8 @@ class EditorIconShow : public EditorIconBase
 public:
 	LHRegion      Region; /* 0x4 */
 	unsigned long Flags;
-	uint32_t      field_0x18;
-	Game3DObject* Object;
+	Game3DObject* Object; /* 0x18 */
+	bool32_t      ObjectRefreshPending;
 	LH3DColor     ActiveColor; /* 0x20 */
 	LH3DColor     InactiveColor;
 	LH3DColor     TextColor;
@@ -44,6 +49,9 @@ public:
 
 	// BW1W120 0051fb20 BW1M119 012bab40
 	EditorIconShow(LHRegion region, const char* text, unsigned long flags, LH3DColor* active_color,
+	               LH3DColor* inactive_color, LH3DColor* hilite_color, LH3DColor* text_color);
+	// BW1W120 0051fb80 BW1M119 012baa00
+	EditorIconShow(const LHCoord& position, const char* text, unsigned long flags, LH3DColor* active_color,
 	               LH3DColor* inactive_color, LH3DColor* hilite_color, LH3DColor* text_color);
 
 	// Destructor
@@ -86,10 +94,83 @@ public:
 	          LH3DColor* hilite_color, LH3DColor* text_color);
 	// BW1W120 0051fc70 BW1M119 012ba630
 	void SetG3DObject(MESH_LIST mesh, int param_2);
+	// BW1W120 0051fd30 BW1M119 012ba550
+	void GetG3DObjectRegion(LHRegion& region);
+	// BW1W120 0051fd70 BW1M119 012ba4e0
+	void SetTextToConstant(const char* text);
 	// BW1W120 0051fd90 BW1M119 012ba330
 	void SetText(const char* text);
 };
 static_assert(sizeof(EditorIconShow) == 0x148, "Data type is of wrong size");
+
+class EditorIconBool : public EditorIconShow
+{
+public:
+	char* InactiveText; /* 0x148 */
+	int*  Value;
+
+	// Constructors
+
+	// BW1W120 0051ffc0
+	EditorIconBool(const LHRegion& region, int& value, const char* text, const char* inactive_text,
+	               unsigned long flags);
+	// BW1W120 005200b0 BW1M119 012b9de0
+	EditorIconBool(const LHCoord& position, int& value, const char* text, const char* inactive_text,
+	               unsigned long flags);
+
+	// Destructor
+
+	// BW1W120 00520150 BW1M119 012b9d30
+	~EditorIconBool();
+
+	// Override methods
+
+	// BW1W120 00520090 BW1M119 012baca0
+	virtual int IsActive();
+	// BW1W120 00520200 BW1M119 012b9bc0
+	virtual int Process();
+	// BW1W120 00520270 BW1M119 012b9b70
+	virtual void Draw(bool32_t parent_active);
+	// BW1W120 00520280 BW1M119 012b9aa0
+	virtual char* GetText();
+
+	// Virtual methods
+
+	// BW1W120 00520070 BW1M119 012b9b30
+	virtual int GetValue();
+	// BW1W120 00520080 BW1M119 012b9cf0
+	virtual void SetValue(int value);
+
+	// Non-virtual methods
+
+	// BW1W120 00520180
+	void SetInactiveText(const char* text);
+};
+
+class EditorIconTextBox : public EditorIconBase
+{
+public:
+	LHRegion  Region; /* 0x4 */
+	LH3DColor Colour;
+	char*     Text;
+
+	// Constructors
+
+	EditorIconTextBox(const LHRegion& region, char* text, LH3DColor* colour);
+
+	// Override methods
+
+	// BW1W120 00520340
+	virtual LHRegion* GetRegion();
+	// BW1W120 00520350
+	virtual int Process();
+	// BW1W120 00520370
+	virtual void Draw(bool32_t parent_active);
+	// BW1W120 00520330
+	virtual int IsActive();
+	// BW1W120 00520360
+	virtual char* GetText();
+};
 
 template <typename T, typename U> class EditorIconNumber : public EditorIconShow
 {
