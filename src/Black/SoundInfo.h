@@ -14,7 +14,15 @@ class Base;
 class GSoundInfo : public GBaseInfo
 {
 public:
-	uint8_t field_0x10[0x2c];
+	uint8_t field_0x10[0xc];
+	float   field_0x1c;
+	uint8_t field_0x20[0x4];
+	float   field_0x24;
+	float   field_0x28;
+	float   field_0x2c;
+	float   field_0x30;
+	float   field_0x34;
+	float   field_0x38;
 	float   TownMusicNearDistance;
 	float   TownMusicFarDistance;
 	uint8_t field_0x44[0x8];
