@@ -172,6 +172,49 @@ public:
 	virtual char* GetText();
 };
 
+class EditorIconRequester : public EditorIconBase
+{
+public:
+	LHRegion        Region; /* 0x4 */
+	LHRegion        TextRegion;
+	bool32_t        Active; /* 0x24 */
+	uint32_t        field_0x28;
+	LH3DColor       Colour; /* 0x2c */
+	uint32_t        field_0x30;
+	EditorIconShow* field_0x34;
+	EditorIconShow* field_0x38;
+	EditorIconShow* field_0x3c;
+
+	// Override methods
+
+	// BW1W120 005203f0
+	virtual LHRegion* GetRegion();
+	// BW1W120 00520400
+	virtual LHRegion* GetTextRegion();
+	// BW1W120 00520410
+	virtual int IsActive();
+	// BW1W120 005206c0
+	virtual int Process();
+	// BW1W120 00520710
+	virtual void Draw(bool32_t parent_active);
+};
+
+class EditorIconEditBox : public EditorIconShow
+{
+public:
+	int           MaxLength; /* 0x148 */
+	char*         Buffer;
+	unsigned long BoxWidth;
+	unsigned long BoxHeight;
+
+	// Override methods
+
+	// BW1W120 00520890
+	virtual int Process();
+	// BW1W120 00520920
+	virtual void Draw(bool32_t parent_active);
+};
+
 template <typename T, typename U> class EditorIconNumber : public EditorIconShow
 {
 public:

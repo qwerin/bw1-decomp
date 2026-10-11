@@ -6,8 +6,11 @@
 #include <Lionhead/LH3DLib/development/LH3DMesh.h>   /* For LH3DMesh::MeshPack */
 #include <Lionhead/LH3DLib/development/LH3DObject.h> /* For LH3DObject::SetMesh */
 
+#include "EditorIconPlace.h"
 #include "Game3DObject.h" /* For Game3DObject::Create */
 #include "Object.h"       /* For Object::Get3DType */
+
+static bool32_t EditorIconTextFitsRegion = true;
 
 #define EDITOR_ICON_FILE           "C:\\dev\\MP\\Black\\EditorIcon.cpp"
 #define EDITOR_ICON_NO_MESH        -1
@@ -17,7 +20,9 @@ enum
 {
 	EDITOR_ICON_G3D_OBJECT_SIZE = 96,
 	EDITOR_ICON_G3D_OBJECT_INSET = 4,
-	EDITOR_ICON_G3D_OBJECT_HALF = 32
+	EDITOR_ICON_G3D_OBJECT_HALF = 32,
+	EDITOR_ICON_TEXT_PADDING = 4,
+	EDITOR_ICON_BOX_OPAQUE = 0xff
 };
 
 EditorIconShow::EditorIconShow(LHRegion region, const char* text, unsigned long flags, LH3DColor* active_color,
@@ -309,4 +314,104 @@ int EditorIconTextBox::IsActive()
 char* EditorIconTextBox::GetText()
 {
 	return Text;
+}
+
+void EditorIconShow::SetRegion(EditorIconPlace& place)
+{
+	LHRegion* region = GetRegion();
+	long      endY = region->end.y;
+	long      startY = region->start.y;
+	int       width = place.GetAvailWidth();
+	long      y = place.Y;
+	long      x = place.X;
+	region = GetRegion();
+	region->start.y = y;
+	region->start.x = x;
+	region->end.x = width + x - 1;
+	region->end.y = y - startY + endY;
+	region = GetRegion();
+	place.Y += region->Height();
+}
+
+void EditorIconShow::SetText(const char* text)
+{
+	if (Flags & EDITOR_ICON_FLAG_COPY_TEXT)
+	{
+		if (text != TextBuffer && text != NULL)
+		{
+			strcpy(TextBuffer, text);
+		}
+		Text = TextBuffer;
+	}
+	else
+	{
+		Text = (char*)text;
+	}
+	if (Text != NULL && *Text != 0 && EditorIconTextFitsRegion)
+	{
+		int width = LHSys::TheSystem.text.StringWidth(Text, NULL);
+		width += EDITOR_ICON_TEXT_PADDING;
+		Region = LHRegion(Region.X1(), Region.Y1(), width, Region.Height());
+	}
+}
+
+LHRegion* EditorIconRequester::GetRegion()
+{
+	return &Region;
+}
+
+LHRegion* EditorIconRequester::GetTextRegion()
+{
+	return &TextRegion;
+}
+
+int EditorIconRequester::IsActive()
+{
+	return Active;
+}
+
+int EditorIconRequester::Process()
+{
+	Active = Region.CoordInRegion(LHSys::TheSystem.mouse.Pos());
+	if (field_0x3c != NULL)
+	{
+		Active |= field_0x3c->Process();
+	}
+	if (field_0x38 != NULL)
+	{
+		Active |= field_0x38->Process();
+	}
+	return Active;
+}
+
+void EditorIconRequester::Draw(bool32_t parent_active)
+{
+	DrawBox(&Region, &Colour, EDITOR_ICON_BOX_OPAQUE, 0);
+	DrawBubbleBox(GetRegion(), GetInactiveColor());
+	if (field_0x34 != NULL)
+	{
+		field_0x34->Draw(false);
+	}
+	if (field_0x3c != NULL)
+	{
+		field_0x3c->Draw(false);
+	}
+	if (field_0x38 != NULL)
+	{
+		field_0x38->Draw(false);
+	}
+}
+
+void EditorIconEditBox::Draw(bool32_t parent_active)
+{
+	if (IsActive())
+	{
+		DrawBox(GetRegion(), GetActiveColor(), EDITOR_ICON_BOX_OPAQUE, 0);
+		DrawTextString(GetActiveColor(), GetRegion());
+	}
+	else
+	{
+		DrawBox(GetRegion(), GetInactiveColor(), EDITOR_ICON_BOX_OPAQUE, 0);
+		DrawTextString(GetInactiveColor(), GetRegion());
+	}
 }
