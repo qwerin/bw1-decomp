@@ -12,6 +12,11 @@
 
 #define MAX_TOWN_CENTRE_SPELLS 6
 
+enum
+{
+	TOWN_CENTRE_SPECIAL_POS_TOTEM = 6,
+};
+
 // Forward Declares
 
 class Base;

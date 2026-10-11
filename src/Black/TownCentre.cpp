@@ -281,7 +281,7 @@ MapCoords TownCentre::GetTotemPos()
 {
 	MapCoords coords;
 	coords.Clear();
-	GetSpecialPos(6, &coords);
+	GetSpecialPos(TOWN_CENTRE_SPECIAL_POS_TOTEM, &coords);
 	return coords;
 }
 
