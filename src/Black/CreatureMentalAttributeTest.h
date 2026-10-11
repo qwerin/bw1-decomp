@@ -108,6 +108,7 @@ public:
 	virtual ~Attribute();
 
 	// Virtual methods
+
 	// BW1W120 004cb6f0 BW1M119 01243290
 	virtual const char* TypeName();
 	// BW1W120 004cb700 BW1M119 012432d0
@@ -132,7 +133,7 @@ class AttributeAbodeBeingBuilt : public Attribute
 public:
 	// Static members
 
-	static char ValueNames[2][64];
+	static char ValueNames[][64];
 
 	// Override methods
 
@@ -249,7 +250,7 @@ class AttributeCreatureHeight : public Attribute
 public:
 	// Static members
 
-	static char ValueNames[4][64];
+	static char ValueNames[][64];
 
 	// Override methods
 
@@ -337,7 +338,7 @@ class AttributeForestSize : public Attribute
 public:
 	// Static members
 
-	static char ValueNames[3][64];
+	static char ValueNames[][64];
 
 	// Override methods
 
@@ -408,7 +409,7 @@ class AttributeMobileObjectType : public Attribute
 public:
 	// Static members
 
-	static char ValueNames[32][64];
+	static char ValueNames[MOBILE_OBJECT_INFO_LAST][64];
 
 	// Override methods
 

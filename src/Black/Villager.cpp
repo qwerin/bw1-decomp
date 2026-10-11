@@ -256,7 +256,7 @@ bool32_t Villager::HasSunk()
 		}
 	}
 	TurnsUntilNextStateChange = ((const GVillagerInfo*)info)->DrowningTime;
-	if ((status & 1) == 1)
+	if ((status & LIVING_STATUS_DYING) == LIVING_STATUS_DYING)
 	{
 		SetTopState(VILLAGER_STATE_DYING);
 		TurnsUntilNextStateChange = ((const GVillagerInfo*)info)->DyingTimeWithoutGraveyard;
@@ -349,7 +349,7 @@ int Villager::CheckChildGrownUp()
 	if (GetAge() >= villagerInfo->TeenAge)
 	{
 		Flags &= ~VILLAGER_FLAG_CHILD;
-		SetAge(max(18, ((const GVillagerInfo*)info)->TeenAge));
+		SetAge(max(VILLAGER_MIN_ADULT_AGE, ((const GVillagerInfo*)info)->TeenAge));
 		if (GetAbode() != NULL)
 		{
 			GetAbode()->ChildToAdult(this);
@@ -361,7 +361,7 @@ int Villager::CheckChildGrownUp()
 		}
 		return ChildBecomesAdult();
 	}
-	if (GGame::g_game->data.GameTurn % ((uint32_t)GGameInfo::Info.TimeScale >> 2) == 0)
+	if (GGame::g_game->data.GameTurn % ((uint32_t)GGameInfo::Info.TimeScale / 4) == 0)
 	{
 		SetScaleForAge(GetAge());
 	}
@@ -691,7 +691,7 @@ uint8_t Villager::GetFinalState() const
 void Villager::ResetStateAfterReacting()
 {
 	PopFromPrevious();
-	if (GVillagerStateTableInfo::Infos[GetFinalState() & 0xff].field_0xc8 != 0)
+	if (GVillagerStateTableInfo::Infos[GetFinalState() & VILLAGER_STATE_LAST_STATE].isReactiveState)
 	{
 		SetTopState(VILLAGER_STATE_DECIDE_WHAT_TO_DO);
 	}
@@ -810,10 +810,10 @@ Abode* Villager::GetAbode()
 }
 
 // BW1W120 007521b0 BW1M119 015755c0
-void Villager::ToBeDeleted(int param_1)
+void Villager::ToBeDeleted(int delete_now)
 {
 	DeleteDependancys();
-	Living::ToBeDeleted(param_1);
+	Living::ToBeDeleted(delete_now);
 }
 
 // BW1W120 007521d0 BW1M119 0104dce0
@@ -896,12 +896,12 @@ bool32_t Villager::IsStateExitFunctionSameAs(unsigned long state) const
 bool Villager::IsReactiveState(unsigned long state)
 {
 	// TODO: 57% -- index/field semantics correct (GVillagerStateTableInfo::Infos[state]
-	// .field_0xc8 != 0). BLOCKED: symbols.txt names this thiscall (?...@@QAE_NK@Z) but the
+	// .isReactiveState). BLOCKED: symbols.txt names this thiscall (?...@@QAE_NK@Z) but the
 	// target body is __cdecl -- ends `c3` (ret, NO arg cleanup), reads state from [esp+4],
 	// never touches ecx(this), returns full eax. Not ICF (ret != ret4 => bytes differ). A
 	// faithful thiscall member compiles to `ret 4`+al. Calling-convention/symbol anomaly for
 	// the dispatcher (symbol may need to be static/cdecl).
-	return GVillagerStateTableInfo::Infos[state].field_0xc8 != 0;
+	return GVillagerStateTableInfo::Infos[state].isReactiveState;
 }
 
 // BW1W120 00752600 BW1M119 01022ae0
@@ -1075,7 +1075,7 @@ void Villager::SetFoodSpeedup(bool value)
 {
 	if (value)
 	{
-		FoodSpeedUp = 0xff;
+		FoodSpeedUp = VILLAGER_FOOD_SPEED_UP_START;
 	}
 	else
 	{
@@ -1332,13 +1332,13 @@ uint32_t Villager::Load(GameOSFile& file)
 void Villager::ResolveLoad() {}
 
 // BW1W120 007548a0 BW1M119 015715c0
-bool32_t Villager::CallSaveStateFunction(GameOSFile& param_1, STATE_TYPE param_2)
+bool32_t Villager::CallSaveStateFunction(GameOSFile& file, STATE_TYPE state_type)
 {
 	return false;
 }
 
 // BW1W120 00754910 BW1M119 015714d0
-bool32_t Villager::CallLoadStateFunction(GameOSFile& param_1, STATE_TYPE param_2)
+bool32_t Villager::CallLoadStateFunction(GameOSFile& file, STATE_TYPE state_type)
 {
 	return false;
 }
@@ -1346,21 +1346,21 @@ bool32_t Villager::CallLoadStateFunction(GameOSFile& param_1, STATE_TYPE param_2
 // BW1W120 00754980 BW1M119 01571420
 bool32_t Villager::SaveStateFunction(GameOSFile& file)
 {
-	bool32_t topSaved = CallSaveStateFunction(file, STATE_TYPE_0);
-	bool32_t finalSaved = CallSaveStateFunction(file, (STATE_TYPE)LIVING_ACTION_INDEX_FINAL);
+	bool32_t topSaved = CallSaveStateFunction(file, STATE_TYPE_TOP);
+	bool32_t finalSaved = CallSaveStateFunction(file, STATE_TYPE_FINAL);
 	return (topSaved | finalSaved) != 0;
 }
 
 // BW1W120 007549b0 BW1M119 01571360
 bool32_t Villager::LoadStateFunction(GameOSFile& file)
 {
-	uint32_t topLoaded = CallLoadStateFunction(file, STATE_TYPE_0);
-	uint32_t finalLoaded = CallLoadStateFunction(file, (STATE_TYPE)LIVING_ACTION_INDEX_FINAL);
+	uint32_t topLoaded = CallLoadStateFunction(file, STATE_TYPE_TOP);
+	uint32_t finalLoaded = CallLoadStateFunction(file, STATE_TYPE_FINAL);
 	if ((topLoaded | finalLoaded) > 0)
 	{
 		return true;
 	}
-	TurnsUntilNextStateChange = GRand::GameRand(20, FILEPATH, 3293) + 1;
+	TurnsUntilNextStateChange = GRand::GameRand(VILLAGER_MAX_LOAD_STATE_CHANGE_DELAY, FILEPATH, 3293) + 1;
 	return false;
 }
 
@@ -1368,7 +1368,7 @@ bool32_t Villager::LoadStateFunction(GameOSFile& file)
 bool32_t Villager::SaveBuilding(GameOSFile& file)
 {
 	file.WritePtr(building_site);
-	file.WriteIt(field_0x118);
+	file.WriteIt(BuildPosIndex);
 	return true;
 }
 
@@ -1376,7 +1376,7 @@ bool32_t Villager::SaveBuilding(GameOSFile& file)
 bool32_t Villager::LoadBuilding(GameOSFile& file)
 {
 	file.ReadPtr((GameThing**)&building_site);
-	file.ReadIt(field_0x118);
+	file.ReadIt(BuildPosIndex);
 	return true;
 }
 
@@ -1399,14 +1399,14 @@ bool32_t Villager::LoadDance(GameOSFile& file)
 // BW1W120 00754c00 BW1M119 01570eb0
 bool32_t Villager::SaveWorship(GameOSFile& file)
 {
-	file.WriteIt(field_0x118);
+	file.WriteIt(RequestingToGoHome);
 	return true;
 }
 
 // BW1W120 00754c60 BW1M119 01570de0
 bool32_t Villager::LoadWorship(GameOSFile& file)
 {
-	file.ReadIt(field_0x118);
+	file.ReadIt(RequestingToGoHome);
 	return true;
 }
 
@@ -1427,14 +1427,14 @@ bool32_t Villager::LoadDead(GameOSFile& file)
 // BW1W120 00754d80 BW1M119 01570b90
 bool32_t Villager::SaveInHand(GameOSFile& file)
 {
-	file.WriteIt(field_0x10c);
+	file.WriteIt(DiscipleOnPickUp);
 	return true;
 }
 
 // BW1W120 00754de0 BW1M119 01570ac0
 bool32_t Villager::LoadInHand(GameOSFile& file)
 {
-	file.ReadIt(field_0x10c);
+	file.ReadIt(DiscipleOnPickUp);
 	return true;
 }
 
@@ -1471,9 +1471,9 @@ bool32_t Villager::LoadFarming(GameOSFile& file)
 // BW1W120 00754f60 BW1M119 015706b0
 bool32_t Villager::SaveFootball(GameOSFile& file)
 {
-	file.WriteIt(FootballRoles[0]);
-	file.WriteIt(FootballRoles[1]);
-	file.WriteIt(FootballRoles[2]);
+	file.WriteIt(FootballSubStateDone);
+	file.WriteIt(FootballSubStateTurns);
+	file.WriteIt(field_0x11a);
 	file.WritePtr(football.Get());
 	return true;
 }
@@ -1481,9 +1481,9 @@ bool32_t Villager::SaveFootball(GameOSFile& file)
 // BW1W120 00755040 BW1M119 01570550
 bool32_t Villager::LoadFootball(GameOSFile& file)
 {
-	file.ReadIt(FootballRoles[0]);
-	file.ReadIt(FootballRoles[1]);
-	file.ReadIt(FootballRoles[2]);
+	file.ReadIt(FootballSubStateDone);
+	file.ReadIt(FootballSubStateTurns);
+	file.ReadIt(field_0x11a);
 	file.ReadPtr((GameThing**)&football);
 	return true;
 }
@@ -1491,16 +1491,16 @@ bool32_t Villager::LoadFootball(GameOSFile& file)
 // BW1W120 00755120 BW1M119 01570430
 bool32_t Villager::SaveShepherd(GameOSFile& file)
 {
-	file.WriteIt(ShepherdData[0]);
-	file.WriteIt(ShepherdData[1]);
+	file.WriteIt(ShepherdWaitTurns);
+	file.WriteIt(ShepherdNextState);
 	return true;
 }
 
 // BW1W120 007551c0 BW1M119 01570320
 bool32_t Villager::LoadShepherd(GameOSFile& file)
 {
-	file.ReadIt(ShepherdData[0]);
-	file.ReadIt(ShepherdData[1]);
+	file.ReadIt(ShepherdWaitTurns);
+	file.ReadIt(ShepherdNextState);
 	return true;
 }
 
@@ -1583,7 +1583,7 @@ bool32_t Villager::LoadDiscipleNothingToDo(GameOSFile& file)
 // BW1W120 007557a0 BW1M119 0156f8d0
 bool32_t Villager::SaveTrader(GameOSFile& file)
 {
-	file.WriteIt(field_0x118);
+	file.WriteIt(TradeResource);
 	file.WritePtr(TradeTown);
 	return true;
 }
@@ -1591,7 +1591,7 @@ bool32_t Villager::SaveTrader(GameOSFile& file)
 // BW1W120 00755810 BW1M119 0156f800
 bool32_t Villager::LoadTrader(GameOSFile& file)
 {
-	file.ReadIt(field_0x118);
+	file.ReadIt(TradeResource);
 	file.ReadPtr((GameThing**)&TradeTown);
 	return true;
 }
@@ -1611,13 +1611,13 @@ bool32_t Villager::LoadInspectObject(GameOSFile& file)
 }
 
 // BW1W120 007558c0 BW1M119 0156f6e0
-bool32_t Villager::SaveReaction(GameOSFile& param_1)
+bool32_t Villager::SaveReaction(GameOSFile& file)
 {
 	return true;
 }
 
 // BW1W120 007558d0 BW1M119 0156f6a0
-bool32_t Villager::LoadReaction(GameOSFile& param_1)
+bool32_t Villager::LoadReaction(GameOSFile& file)
 {
 	return true;
 }
@@ -1626,7 +1626,7 @@ bool32_t Villager::LoadReaction(GameOSFile& param_1)
 bool32_t Villager::SaveClearArea(GameOSFile& file)
 {
 	file.WriteIt(ClearAreaPos);
-	file.WriteIt(field_0x120);
+	file.WriteIt(ClearAreaRadius);
 	return true;
 }
 
@@ -1634,7 +1634,7 @@ bool32_t Villager::SaveClearArea(GameOSFile& file)
 bool32_t Villager::LoadClearArea(GameOSFile& file)
 {
 	file.ReadIt(ClearAreaPos);
-	file.ReadIt(field_0x120);
+	file.ReadIt(ClearAreaRadius);
 	return true;
 }
 
@@ -1687,32 +1687,32 @@ bool32_t Villager::LoadFootPath(GameOSFile& file)
 // BW1W120 00755b80 BW1M119 0156ef90
 bool32_t Villager::SaveInspectionReaction(GameOSFile& file)
 {
-	file.WriteIt(field_0x10c);
-	file.WriteIt(field_0x110);
+	file.WriteIt(InspectDistance);
+	file.WriteIt(InspectTurnsUntilApproach);
 	return true;
 }
 
 // BW1W120 00755c20 BW1M119 0156ee70
 bool32_t Villager::LoadInspectionReaction(GameOSFile& file)
 {
-	file.ReadIt(field_0x10c);
-	file.ReadIt(field_0x110);
+	file.ReadIt(InspectDistance);
+	file.ReadIt(InspectTurnsUntilApproach);
 	return true;
 }
 
 // BW1W120 00755cc0 BW1M119 0156ed40
 bool32_t Villager::SaveMagicTreeReaction(GameOSFile& file)
 {
-	file.WriteIt(field_0x10c);
-	file.WriteIt(field_0x110);
+	file.WriteIt(BewilderedTreeIndex);
+	file.WriteIt(BewilderedTreesSeen);
 	return true;
 }
 
 // BW1W120 00755d60 BW1M119 0156ec20
 bool32_t Villager::LoadMagicTreeReaction(GameOSFile& file)
 {
-	file.ReadIt(field_0x10c);
-	file.ReadIt(field_0x110);
+	file.ReadIt(BewilderedTreeIndex);
+	file.ReadIt(BewilderedTreesSeen);
 	return true;
 }
 
@@ -1872,13 +1872,13 @@ bool32_t Villager::ScriptInCrowd()
 }
 
 // BW1W120 00756570 BW1M119 0156dd00
-bool32_t Villager::SaveLanded(GameOSFile& param_1)
+bool32_t Villager::SaveLanded(GameOSFile& file)
 {
 	return true;
 }
 
 // BW1W120 00756580 BW1M119 0156dcc0
-bool32_t Villager::LoadLanded(GameOSFile& param_1)
+bool32_t Villager::LoadLanded(GameOSFile& file)
 {
 	return true;
 }
@@ -1941,7 +1941,7 @@ void Villager::FindChildrenAndOrphanThem() {}
 // BW1W120 00756c60 BW1M119 0104feb0
 bool32_t Villager::IsMovingForAnimation()
 {
-	return GVillagerStateTableInfo::Infos[action.states[LIVING_ACTION_INDEX_TOP]].field_0x24;
+	return GVillagerStateTableInfo::Infos[action.states[LIVING_ACTION_INDEX_TOP]].isMovingForAnimation;
 }
 #endif
 
