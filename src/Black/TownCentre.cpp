@@ -22,13 +22,7 @@
 #include "TownSpellIcon.h"
 #include "WorshipSite.h"
 
-#if defined(VERSION_BW1W100)
-#define TOWN_CENTRE_FILE "C:\\dev\\black\\TownCentre.cpp"
-#elif defined(VERSION_BW1W110)
-#define TOWN_CENTRE_FILE "C:\\dev\\Black\\TownCentre.cpp"
-#else
 #define TOWN_CENTRE_FILE "C:\\dev\\MP\\Black\\TownCentre.cpp"
-#endif
 
 // Fixed-point factor for the angle, scale and worship speed in the script command written by SaveObject.
 #define TOWN_CENTRE_SCRIPT_SCALE     1000
