@@ -15,14 +15,11 @@
 
 #define CREATURE_MIMIC_FILE "C:\\dev\\MP\\Black\\CreatureMimic.cpp"
 
-#define MIMIC_STOLEN_OBJECT_CITADEL_RANGE 80.0f
-#define MIMIC_STAGE_LIMIT_RANDOM_RANGE    1
-
 CreatureMimicInfo CreatureMimicInfo::Infos[DETECTED_PLAYER_ACTION_LAST];
 
-GBaseInfo* CreatureMimicInfo::GetBaseInfo(uint32_t& param_1)
+GBaseInfo* CreatureMimicInfo::GetBaseInfo(uint32_t& num_infos)
 {
-	param_1 = DETECTED_PLAYER_ACTION_LAST;
+	num_infos = DETECTED_PLAYER_ACTION_LAST;
 	return Infos;
 }
 
@@ -30,7 +27,7 @@ CreatureMimicInfo::~CreatureMimicInfo() {}
 
 CreatureMimicState::CreatureMimicState()
 {
-	field_0x8 = 0;
+	Active = false;
 }
 
 CreatureMimicState::~CreatureMimicState() {}
@@ -38,21 +35,21 @@ CreatureMimicState::~CreatureMimicState() {}
 void CreatureMimicState::SetCreatureIntoStateOfMimicking(DETECTED_PLAYER_ACTION action, GameThingWithPos* thing,
                                                          MAGIC_TYPE magic_type)
 {
-	field_0x8 = 1;
-	field_0xc = 0;
+	Active = true;
+	Completed = false;
 	DetectedPlayerAction = action;
 	this->magic_type = magic_type;
 	game_thing = thing;
 	if (thing != NULL)
 	{
 		coords = thing->Pos;
-		field_0x1c = thing->GetCreatureMimicType();
+		ObjectMimicType = thing->GetCreatureMimicType();
 	}
 	Stage = 0;
 	StageProgress = 0;
 	uint32_t baseLimit = CreatureMimicInfo::Infos[DetectedPlayerAction].BaseStageLimit;
 	StageLimit = baseLimit + GRand::GameRand(MIMIC_STAGE_LIMIT_RANDOM_RANGE, CREATURE_MIMIC_FILE, 39);
-	field_0x2c = GGame::g_game->data.GameTurn;
+	StartTurn = GGame::g_game->data.GameTurn;
 }
 
 void Object::ConsiderCreatureMimickingWhenObjectLands()

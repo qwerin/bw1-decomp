@@ -10,9 +10,25 @@
 #include "MapCoords.h" /* For struct MapCoords */
 #include <string.h>
 
+#define ATMOS_DISTANCE_UNSET     65535.0f
+#define SOUND_MAP_DEBUG_CATEGORY 1
+
 enum ATMOS_TYPE
 {
 	ATMOS_TYPE_NONE = 0,
+	ATMOS_TYPE_SEA = 1,
+	ATMOS_TYPE_STILL_FRESH_WATER = 2,
+	ATMOS_TYPE_COASTAL = 3,
+	ATMOS_TYPE_JUNGLE = 4,
+	ATMOS_TYPE_ARCTIC = 5,
+	ATMOS_TYPE_DESERT = 6,
+	ATMOS_TYPE_COUNTRYSIDE = 7,
+	ATMOS_TYPE_SWAMP = 8,
+	ATMOS_TYPE_RUNNING_WATER = 9,
+	ATMOS_TYPE_STRATOSPHERE = 10,
+	ATMOS_TYPE_NIGHT = 11,
+	ATMOS_TYPE_RAIN = 12,
+	ATMOS_TYPE_WIND = 13,
 	ATMOS_TYPE_LAST = 14
 };
 
@@ -85,7 +101,7 @@ public:
 	// BW1W120 0071dac0 BW1M119 01074af0
 	float GetVolumePercentageForHeight(const LHPoint& pos);
 	// BW1W120 0071db80 BW1M119 0101aec0
-	void CalculateAtmosWeightings(float* param_1, float* param_2, float* param_3);
+	void CalculateAtmosWeightings(float* ground_weight, float* air_weight, float* receiver_ground_weight);
 	// BW1W120 0071d5c0 BW1M119 0101fd20
 	float GetAtmosDistance(ATMOS_TYPE type);
 	// BW1W120 0071d5e0 BW1M119 01026db0

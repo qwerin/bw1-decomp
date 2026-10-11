@@ -6,6 +6,7 @@
 #include <stdint.h> /* For uint8_t */
 
 #include <Lionhead/LH3DLib/development/LHPoint.h> /* For struct LHPoint */
+#include <re_common.h>                            /* For bool32_t */
 
 #include "GJBaseUtils.h"          /* For GJLowPassFilterVariableStep */
 #include "HandStateHolding.h"     /* For struct HandStateHolding */
@@ -16,6 +17,10 @@
 class CHand;
 class Creature;
 
+#define GRAIN_SPLINE_KEY_POINT_COUNT 8
+#define GRAIN_ENVELOPE_ATTACK_END    0.2f
+#define GRAIN_ENVELOPE_RELEASE_START 0.8f
+
 class HandStateGrain : public HandStateHolding
 {
 public:
@@ -24,18 +29,18 @@ public:
 	float                                Raise;
 	float                                PreviousTilt;
 	float                                PreviousRaise;
-	bool                                 field_0x124;
+	bool                                 Pouring;
 	int                                  field_0x128;
-	float                                field_0x12c;
-	float                                field_0x130;
-	float                                field_0x134;
-	float                                field_0x138;
-	Creature*                            field_0x13c;
-	KPSplineInterpolator<float>          field_0x140;
-	uint32_t                             field_0x14c;
+	float                                PourProgress;
+	float                                PourDuration;
+	float                                PourTilt;
+	float                                PourRaise;
+	Creature*                            PourTarget;
+	KPSplineInterpolator<float>          PourEnvelope;
+	uint32_t                             TimedPourState;
 	uint8_t                              field_0x150[0x9c]; /* 0x150 */
-	LHPoint                              field_0x1ec;
-	uint32_t                             field_0x1f8;
+	LHPoint                              PourTargetPos;
+	bool32_t                             HasPourTargetPos;
 	GJLowPassFilterVariableStep<LHPoint> field_0x1fc; /* 0x1fc */
 	GJLowPassFilterVariableStep<float>   field_0x210;
 	GJLowPassFilterVariableStep<float>   field_0x21c;

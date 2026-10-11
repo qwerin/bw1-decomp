@@ -2,11 +2,12 @@
 #include "CitadelPeople.h"
 
 #include <Lionhead/LH3DLib/development/LH3DMesh.h> /* For struct LH3DMesh */
+#include <Lionhead/LH3DLib/development/LHPoint.h>  /* For struct LHPoint */
 
 #define CITADEL_MOVEMENT_MESH_FILE "data\\citadel\\engine\\movement.l3d"
 
-void* CPController::field_0xc5e3f4;
-void* CPController::field_0xc5e3f0;
+LHPoint* CPController::Vertices;
+void*    CPController::Triangles;
 
 void CPController::Init()
 {
@@ -17,8 +18,8 @@ void CPController::Init()
 
 void CPController::Close()
 {
-	delete field_0xc5e3f4;
-	delete field_0xc5e3f0;
-	field_0xc5e3f4 = NULL;
-	field_0xc5e3f0 = NULL;
+	delete Vertices;
+	delete Triangles;
+	Vertices = NULL;
+	Triangles = NULL;
 }

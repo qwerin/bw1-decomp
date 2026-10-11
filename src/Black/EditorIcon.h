@@ -16,9 +16,16 @@
 
 #define EDITOR_ICON_TEXT_SIZE 0x100
 
-enum
+#define EDITOR_ICON_DEFAULT_HEIGHT             14
+#define EDITOR_ICON_G3D_OBJECT_SIZE            96
+#define EDITOR_ICON_G3D_OBJECT_INSET           4
+#define EDITOR_ICON_G3D_OBJECT_VERTICAL_OFFSET 32
+#define EDITOR_ICON_TEXT_PADDING               4
+#define EDITOR_ICON_ALPHA_OPAQUE               0xff
+
+enum EDITOR_ICON_FLAGS
 {
-	EDITOR_ICON_FLAG_COPY_TEXT = 2
+	EDITOR_ICON_FLAG_COPY_TEXT = 0x2,
 };
 
 // Forward Declares
@@ -41,7 +48,7 @@ public:
 	bool32_t      LeftClicked;
 	bool32_t      RightClicked;
 	bool32_t      Processed;
-	uint32_t      field_0x40; /* 0x40 */
+	uint32_t      HiliteTime; /* 0x40 */
 	MESH_LIST     Mesh;
 	char          TextBuffer[EDITOR_ICON_TEXT_SIZE];
 
@@ -93,7 +100,7 @@ public:
 	void Init(const char* text, MESH_LIST mesh, LH3DColor* active_color, LH3DColor* inactive_color,
 	          LH3DColor* hilite_color, LH3DColor* text_color);
 	// BW1W120 0051fc70 BW1M119 012ba630
-	void SetG3DObject(MESH_LIST mesh, int param_2);
+	void SetG3DObject(MESH_LIST mesh, int position_object);
 	// BW1W120 0051fd30 BW1M119 012ba550
 	void GetG3DObjectRegion(LHRegion& region);
 	// BW1W120 0051fd70 BW1M119 012ba4e0
@@ -181,9 +188,9 @@ public:
 	uint32_t        field_0x28;
 	LH3DColor       Colour; /* 0x2c */
 	uint32_t        field_0x30;
-	EditorIconShow* field_0x34;
-	EditorIconShow* field_0x38;
-	EditorIconShow* field_0x3c;
+	EditorIconShow* Label;
+	EditorIconShow* AcceptButton;
+	EditorIconShow* CancelButton;
 
 	// Override methods
 

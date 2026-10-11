@@ -12,9 +12,13 @@
 
 #define MAX_TOWN_CENTRE_SPELLS 6
 
-enum
+#define TOWN_CENTRE_SCRIPT_FIXED_POINT 1000
+#define TOWN_CENTRE_INITIAL_WOOD       1
+
+enum TOWN_CENTRE_SPECIAL_POS
 {
-	TOWN_CENTRE_SPECIAL_POS_TOTEM = 6,
+	TOWN_CENTRE_SPECIAL_POS_SPELL_ICON_FIRST = 0,
+	TOWN_CENTRE_SPECIAL_POS_TOTEM = MAX_TOWN_CENTRE_SPELLS,
 };
 
 // Forward Declares
@@ -53,7 +57,7 @@ public:
 	// BW1W120 00743ae0 BW1M119 015651c0
 	virtual ~TownCentre();
 	// BW1W120 00743b40 BW1M119 01565000
-	virtual void ToBeDeleted(int param_1);
+	virtual void ToBeDeleted(int delete_now);
 	// BW1W120 0055dba0 BW1M119 01565670
 	virtual char* GetDebugText() { return "TownCentre:"; }
 	// BW1W120 00744880 BW1M119 01563370
@@ -83,7 +87,7 @@ public:
 	// BW1W120 00516450 BW1M119 01021420
 	virtual void Draw();
 	// BW1W120 007448e0 BW1M119 015631d0
-	virtual uint32_t GetDiscipleStateIfInteractedWith(GInterfaceStatus* param_1, Villager* param_2);
+	virtual uint32_t GetDiscipleStateIfInteractedWith(GInterfaceStatus* status, Villager* villager);
 	// BW1W120 00743cf0 BW1M119 01564b10
 	virtual void CallVirtualFunctionsForCreation(const MapCoords& coords);
 	// BW1W120 0055db20 BW1M119 01565450
@@ -93,9 +97,9 @@ public:
 	// BW1W120 00743bc0 BW1M119 01564fb0
 	virtual bool InteractsWithPhysicsObjects();
 	// BW1W120 00744380 BW1M119 01563c80
-	virtual void ReactToPhysicsImpact(PhysicsObject* param_1, bool param_2);
+	virtual void ReactToPhysicsImpact(PhysicsObject* physics, bool transferred_damage);
 	// BW1W120 00744140 BW1M119 01563f80
-	virtual uint32_t SaveObject(LHOSFile& param_1, const MapCoords* param_2);
+	virtual uint32_t SaveObject(LHOSFile& file, const MapCoords* coords);
 	// BW1W120 00744940 BW1M119 inlined
 	virtual MapCoords GetDoorPos();
 	// BW1W120 007443a0 BW1M119 01563bf0
@@ -107,7 +111,7 @@ public:
 	// BW1W120 00743e80 BW1M119 01564790
 	virtual void MakeFunctional();
 	// BW1W120 00744a00 BW1M119 01562f50
-	virtual void StopBeingFunctional(GPlayer* param_1);
+	virtual void StopBeingFunctional(GPlayer* player);
 	// BW1W120 0055db30 BW1M119 01565490
 	virtual bool32_t CausesTownEmergencyIfDamaged() { return true; }
 	// BW1W120 0055db80 BW1M119 015655f0
@@ -141,19 +145,19 @@ public:
 	// BW1W120 0069bd60 BW1M119 01068850
 	void DrawPSys();
 	// BW1W120 00743d90 BW1M119 inlined
-	void fn_00743D90();
+	void PostCreate();
 	// BW1W120 0069bca0 BW1M119 inlined
-	void fn_0069BCA0();
+	void DeletePSys();
 	// BW1W120 00743da0 BW1M119 015649b0
 	bool CreateTotemIfNecessary();
 	// BW1W120 00743f20 BW1M119 015646c0
 	MapCoords GetTotemPos();
 	// BW1W120 00743f60 BW1M119 inlined
-	bool32_t fn_00743F60(MapCoords& coords, float& y_angle);
+	bool32_t GetNextSpellIconPos(MapCoords& coords, float& y_angle);
 	// BW1W120 00743ff0 BW1M119 inlined
-	int fn_00743FF0(TownCentreSpellIcon* icon);
+	int GetSpellIconIndex(TownCentreSpellIcon* icon);
 	// BW1W120 00744290 BW1M119 inlined
-	void fn_00744290(TownCentreSpellIcon* icon);
+	void RemoveSpellIcon(TownCentreSpellIcon* icon);
 	// BW1W120 00743fa0 BW1M119 015645f0
 	TownCentreSpellIcon* FindSpellIcon(SPELL_SEED_TYPE type);
 	// BW1W120 00744010 BW1M119 01564490

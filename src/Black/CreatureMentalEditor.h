@@ -38,7 +38,7 @@ public:
 	// BW1W120 004df2e0 BW1M119 012643b0
 	void Draw();
 	// BW1W120 004df2b0 BW1M119 012644c0
-	bool32_t ProcessHand(const MapCoords& coords, int param_2, int param_3);
+	bool32_t ProcessHand(const MapCoords& coords, int, int);
 };
 
 #endif /* BW1_DECOMP_CREATURE_MENTAL_EDITOR_INCLUDED_H */

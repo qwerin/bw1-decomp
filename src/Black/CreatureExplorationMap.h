@@ -2,17 +2,15 @@
 #define BW1_DECOMP_CREATURE_EXPLORATION_MAP_INCLUDED_H
 
 #include <assert.h> /* For static_assert */
+#include <limits.h> /* For CHAR_BIT */
 #include <stdint.h> /* For uint16_t, uint32_t */
 
 #include "Base.h"      /* For struct Base */
 #include "MapCoords.h" /* For struct MapCoords */
 
-enum
-{
-	EXPLORATION_REGIONS_PER_SIDE = 64,
-	EXPLORATION_BITS_PER_BYTE = 8,
-	EXPLORATION_CELLS_PER_REGION = 8
-};
+#define EXPLORATION_REGIONS_PER_SIDE       64
+#define EXPLORATION_CELLS_PER_REGION_SHIFT 3
+#define EXPLORATION_MAX_TIME_IN_REGION     0xfffe
 
 enum REGION_TYPE
 {
@@ -34,11 +32,11 @@ class Creature;
 class CreatureExplorationMap : public Base
 {
 public:
-	uint32_t  field_0x8;
+	uint32_t  Flags;
 	MapCoords coords;
-	uint8_t  Visited[EXPLORATION_REGIONS_PER_SIDE][EXPLORATION_REGIONS_PER_SIDE / EXPLORATION_BITS_PER_BYTE]; /* 0x18 */
-	uint8_t  Known[EXPLORATION_REGIONS_PER_SIDE][EXPLORATION_REGIONS_PER_SIDE / EXPLORATION_BITS_PER_BYTE];
-	uint16_t TimeInRegion[EXPLORATION_REGIONS_PER_SIDE][EXPLORATION_REGIONS_PER_SIDE]; /* 0x418 */
+	uint8_t   Visited[EXPLORATION_REGIONS_PER_SIDE][EXPLORATION_REGIONS_PER_SIDE / CHAR_BIT]; /* 0x18 */
+	uint8_t   Known[EXPLORATION_REGIONS_PER_SIDE][EXPLORATION_REGIONS_PER_SIDE / CHAR_BIT];
+	uint16_t  TimeInRegion[EXPLORATION_REGIONS_PER_SIDE][EXPLORATION_REGIONS_PER_SIDE]; /* 0x418 */
 
 	// Constructors
 
@@ -66,16 +64,16 @@ public:
 class CreatureExplorationRegionEntry : public Base
 {
 public:
-	uint32_t field_0x8;
-	uint32_t field_0xc;
-	uint32_t field_0x10;
-	uint32_t field_0x14;
+	float    MaxAltitude;
+	uint32_t HighestPointX;
+	uint32_t HighestPointZ;
+	float    HighestPointAltitude;
 	uint32_t field_0x18;
 
 	// Constructors
 
 	// BW1W120 inlined BW1M119 012662a0
-	CreatureExplorationRegionEntry() : field_0xc(0), field_0x10(0), field_0x14(0) {}
+	CreatureExplorationRegionEntry() : HighestPointX(0), HighestPointZ(0), HighestPointAltitude(0) {}
 
 	// Override methods
 
@@ -88,7 +86,7 @@ class CreatureGlobalExplorationMap : public Base
 {
 public:
 	CreatureExplorationRegionEntry Regions[EXPLORATION_REGIONS_PER_SIDE * EXPLORATION_REGIONS_PER_SIDE]; /* 0x8 */
-	int                            field_0x1c008;
+	int                            MaxAltitude;
 
 	// Descriptive name.
 	// BW1W120 00c8dc40
@@ -103,7 +101,7 @@ public:
 	// Constructors
 
 	// BW1W120 inlined BW1M119 inlined
-	CreatureGlobalExplorationMap() : field_0x1c008(0) {}
+	CreatureGlobalExplorationMap() : MaxAltitude(0) {}
 
 	// Override methods
 

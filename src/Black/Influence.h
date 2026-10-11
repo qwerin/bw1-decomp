@@ -26,22 +26,24 @@ enum INFL_CALC_TYPE
 	INFL_CALC_TYPE_ALWAYS_INCLUDE_HAND = 1,
 };
 
+#define OUTER_RING_INFLUENCE_FRACTION 0.2
+
 class Influence
 {
 public:
 	// BW1W120 005cd170 BW1M119 010386b0
-	static float CalculatePlayerInfluence(const MapCoords& pos, GPlayer* player, int param_3, INFL_CALC_TYPE type,
-	                                      int param_5);
+	static float CalculatePlayerInfluence(const MapCoords& pos, GPlayer* player, int calc_flags, INFL_CALC_TYPE type,
+	                                      int include_allies);
 	// BW1W120 005cd230 BW1M119 010461a0
-	static float CalculatePlayerRawInfluence(const MapCoords& pos, GPlayer* player, int param_3);
+	static float CalculatePlayerRawInfluence(const MapCoords& pos, GPlayer* player, int calc_flags);
 	// BW1W120 005cd400 BW1M119 inlined
-	static float fn_005CD400(const MapCoords& pos, GPlayer* player);
+	static float CalculateAllyInfluence(const MapCoords& pos, GPlayer* player);
 	// BW1W120 005cd460 BW1M119 01069830
 	static bool32_t IsInPlayerRawInfluence(const MapCoords& pos, GPlayer* player);
 	// BW1W120 005cd490 BW1M119 010466f0
 	static bool32_t IsInAntiInfluence(const MapCoords& pos, GPlayer* player);
 	// BW1W120 005cd560 BW1M119 01043990
-	static float CalculateInfluenceOnRange(float distance, float radius, int param_3);
+	static float CalculateInfluenceOnRange(float distance, float radius, int calc_flags);
 	// BW1W120 005cd630 BW1M119 010674f0
 	static GPlayer* CalculateMostInfluentialPlayer(const MapCoords& pos, float* influence);
 };
@@ -67,7 +69,7 @@ public:
 	// BW1W120 005cda90 BW1M119 011058d0
 	virtual uint32_t SaveObject(LHOSFile& file, const MapCoords* coords);
 	// BW1W120 005cd8a0 BW1M119 01105da0
-	virtual void ToBeDeleted(int param_1);
+	virtual void ToBeDeleted(int delete_now);
 	// BW1W120 0055ec40 BW1M119 010467f0
 	virtual GPlayer* GetPlayer() { return player.Get(); }
 	// BW1W120 0055ec10 BW1M119 01104f10
@@ -92,7 +94,7 @@ public:
 	// Non-virtual methods
 
 	// BW1W120 005cd900 BW1M119 01046830
-	float CalculateInfluence(const MapCoords& pos, GPlayer* player, int param_3);
+	float CalculateInfluence(const MapCoords& pos, GPlayer* player, int calc_flags);
 	// BW1W120 005cd960 BW1M119 01105c90
 	void SetThing(GameThingWithPos* thing);
 	// BW1W120 005cda60 BW1M119 01035970
@@ -100,7 +102,7 @@ public:
 	// BW1W120 005cdb40 BW1M119 01105890
 	void UpdateInfluence(float radius);
 	// BW1W120 005cdbd0 BW1M119 inlined
-	GameThingWithPos* fn_005CDBD0();
+	GameThingWithPos* GetThing();
 	// BW1W120 005cdc00 BW1M119 010442b0
 	void Process();
 

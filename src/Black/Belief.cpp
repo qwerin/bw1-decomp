@@ -10,17 +10,11 @@
 #include "Utils.h"
 #include "ValueSpinner.h"
 
-#define DEFAULT_BELIEF_CAP         10.0f
-#define BELIEF_LOSS_DRAW_THRESHOLD 0.005
-#define BELIEF_DISTANCE_THRESHOLD  -0.9f
-#define BELIEF_DIFFERENCE_FLOOR    -9999.0f
-#define VALUE_SPINNER_RISE_SPEED   10.0f
-
 GBeliefInfo GBeliefInfo::Info;
 
-GBaseInfo* GBeliefInfo::GetBaseInfo(uint32_t& param_1)
+GBaseInfo* GBeliefInfo::GetBaseInfo(uint32_t& num_infos)
 {
-	param_1 = 1;
+	num_infos = 1;
 	return &Info;
 }
 
@@ -41,12 +35,12 @@ void GBelief::Init(Town* town)
 	{
 		BoredomMultiplier[j] = 1.0f;
 	}
-	fn_00437E50();
+	CopyDesireAffectsBeliefAfter();
 }
 
-float GBelief::GetBeliefInPlayer(unsigned long param_1)
+float GBelief::GetBeliefInPlayer(unsigned long player_number)
 {
-	return BeliefInPlayer[param_1];
+	return BeliefInPlayer[player_number];
 }
 
 float GBelief::GetBeliefInPlayer(GPlayer* player)
@@ -54,7 +48,7 @@ float GBelief::GetBeliefInPlayer(GPlayer* player)
 	return BeliefInPlayer[player->GetPlayerNumber()];
 }
 
-void GBelief::AddToBelief(GPlayer* player, float amount, GameThingWithPos* object, int param_4,
+void GBelief::AddToBelief(GPlayer* player, float amount, GameThingWithPos* object, int draw_belief,
                           GUIDANCE_ALIGNMENT alignment)
 {
 	unsigned long playerNumber = player->GetPlayerNumber();
@@ -66,7 +60,7 @@ void GBelief::AddToBelief(GPlayer* player, float amount, GameThingWithPos* objec
 	}
 	if (object != NULL)
 	{
-		if (param_4 != 0)
+		if (draw_belief != 0)
 		{
 			DrawBelief(amount, object, player);
 		}
@@ -90,14 +84,14 @@ void GBelief::ReduceBelief(GPlayer* player, Town* town, float amount)
 	}
 }
 
-float GBelief::fn_00438060(unsigned long player_number)
+float GBelief::GetBeliefInPlayerDelta(unsigned long player_number)
 {
 	return BeliefInPlayerDelta[player_number];
 }
 
-float GBelief::DistanceChangeToBelief(float param_1, float param_2)
+float GBelief::DistanceChangeToBelief(float distance, float radius)
 {
-	return GUtils::SigmoidThreshold(BELIEF_DISTANCE_THRESHOLD, -(param_1 / param_2));
+	return GUtils::SigmoidThreshold(BELIEF_DISTANCE_THRESHOLD, -(distance / radius));
 }
 
 void GBelief::AddToBoredomMultiplier(Reaction* reaction, float amount)

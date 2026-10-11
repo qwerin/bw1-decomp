@@ -7,28 +7,20 @@
 #include "CreatureMorph.h"
 #include "Game.h"
 
-enum
-{
-	GRAIN_SPLINE_KEY_POINT_COUNT = 8
-};
-
-#define GRAIN_ENVELOPE_ATTACK_END    0.2f
-#define GRAIN_ENVELOPE_RELEASE_START 0.8f
-
 HandStateGrain::HandStateGrain(CHand* hand) : HandStateHolding(hand)
 {
-	field_0x14c = 0;
+	TimedPourState = 0;
 	Tilt = 0.0f;
 	Raise = 0.0f;
 	PreviousTilt = 0.0f;
 	PreviousRaise = 0.0f;
-	field_0x13c = NULL;
-	field_0x1f8 = 0;
-	field_0x124 = false;
-	field_0x12c = 0.0f;
-	field_0x130 = 1.0f;
-	field_0x134 = 0.0f;
-	field_0x138 = 0.0f;
+	PourTarget = NULL;
+	HasPourTargetPos = 0;
+	Pouring = false;
+	PourProgress = 0.0f;
+	PourDuration = 1.0f;
+	PourTilt = 0.0f;
+	PourRaise = 0.0f;
 
 	GJArray<float> keyPoints;
 	keyPoints.SetSize(GRAIN_SPLINE_KEY_POINT_COUNT);
@@ -40,22 +32,22 @@ HandStateGrain::HandStateGrain(CHand* hand) : HandStateHolding(hand)
 	keyPoints[5] = 1.0f;
 	keyPoints[6] = 1.0f;
 	keyPoints[7] = 0.0f;
-	field_0x140.SetFromArray(keyPoints);
+	PourEnvelope.SetFromArray(keyPoints);
 }
 
 void HandStateGrain::EndTimedPour()
 {
-	field_0x13c = NULL;
-	field_0x1f8 = 0;
+	PourTarget = NULL;
+	HasPourTargetPos = 0;
 	Raise = 0.0f;
 	Tilt = 0.0f;
-	field_0x124 = false;
+	Pouring = false;
 }
 
 void HandStateGrain::Exit()
 {
-	field_0x124 = false;
-	field_0x13c = NULL;
+	Pouring = false;
+	PourTarget = NULL;
 }
 
 float HandStateGrain::GetTiltForRender()
@@ -71,17 +63,17 @@ float HandStateGrain::GetRaiseForRender()
 void HandStateGrain::OverrideHandPos(LHPoint* pos)
 {
 	const LHPoint* source;
-	if (field_0x13c == NULL)
+	if (PourTarget == NULL)
 	{
-		if (field_0x1f8 == 0)
+		if (HasPourTargetPos == 0)
 		{
 			return;
 		}
-		source = &field_0x1ec;
+		source = &PourTargetPos;
 	}
 	else
 	{
-		LH3DCreature* creature3d = field_0x13c->GetCreature3D();
+		LH3DCreature* creature3d = PourTarget->GetCreature3D();
 		source = &creature3d->TransformedMatrices[creature3d->HeadBone].GetPos();
 	}
 	*pos = *source;

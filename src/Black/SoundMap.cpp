@@ -11,16 +11,6 @@
 #include "Interface.h"
 #include "SoundInfo.h"
 
-enum
-{
-	MAP_COORD_FIXED_POINT_ONE = 0x10000
-};
-
-#define ATMOS_DISTANCE_INITIAL 65535.0f
-#define MAP_COORDS_PER_METRE   6553.6f
-
-#define SOUND_MAP_DEBUG_CATEGORY 1
-
 static char* SoundSurfaceTypeNames[SOUND_SURFACE_TYPE_LAST + 1] = {
 	"SOUND SURFACE TYPE NONE",       "SOUND SURFACE TYPE GRASS",         "SOUND SURFACE TYPE GRAVEL",
 	"SOUND SURFACE TYPE HARD",       "SOUND SURFACE TYPE MUD",           "SOUND SURFACE TYPE SNOW",
@@ -31,9 +21,9 @@ GSoundInfo GSoundInfo::Info;
 
 GSoundInfo::~GSoundInfo() {}
 
-GBaseInfo* GSoundInfo::GetBaseInfo(uint32_t& param_1)
+GBaseInfo* GSoundInfo::GetBaseInfo(uint32_t& num_infos)
 {
-	param_1 = 1;
+	num_infos = 1;
 	return &Info;
 }
 
@@ -42,22 +32,22 @@ void AtmosMapInfo::Clear()
 	for (int i = 0; i < ATMOS_TYPE_LAST; i++)
 	{
 		Types[i].Count = 0;
-		Types[i].Distance = ATMOS_DISTANCE_INITIAL;
+		Types[i].Distance = ATMOS_DISTANCE_UNSET;
 	}
 }
 
 void AtmosMapTypeInfo::Add(const MapCoords& receiver, const MapCoords& coords)
 {
-	float dz = receiver.z * MetresPerMapCell / (float)MAP_COORD_FIXED_POINT_ONE -
-	           coords.z * MetresPerMapCell / (float)MAP_COORD_FIXED_POINT_ONE;
-	float dx = receiver.x * MetresPerMapCell / (float)MAP_COORD_FIXED_POINT_ONE -
-	           coords.x * MetresPerMapCell / (float)MAP_COORD_FIXED_POINT_ONE;
+	float dz = receiver.z * MetresPerMapCell / (float)MAP_COORDS_PER_CELL -
+	           coords.z * MetresPerMapCell / (float)MAP_COORDS_PER_CELL;
+	float dx = receiver.x * MetresPerMapCell / (float)MAP_COORDS_PER_CELL -
+	           coords.x * MetresPerMapCell / (float)MAP_COORDS_PER_CELL;
 	float distance = dx * dx + dz * dz;
 	if (distance < Distance)
 	{
 		Distance = distance;
-		NearestX = (uint16_t)(coords.x * MetresPerMapCell / (float)MAP_COORD_FIXED_POINT_ONE);
-		NearestZ = (uint16_t)(coords.z * MetresPerMapCell / (float)MAP_COORD_FIXED_POINT_ONE);
+		NearestX = (uint16_t)(coords.x * MetresPerMapCell / (float)MAP_COORDS_PER_CELL);
+		NearestZ = (uint16_t)(coords.z * MetresPerMapCell / (float)MAP_COORDS_PER_CELL);
 	}
 	Count++;
 }
@@ -121,21 +111,21 @@ void GSoundMap::CalculateRadiusPointAndDistance()
 	ReceiverHeight = ReceiverPos.y;
 	LH3DMapCoords mapCoords(receiver->x, receiver->z);
 	HeightAboveLand = ReceiverHeight - LH3DIsland::GetAltitude(mapCoords);
-	Radius = GSoundInfo::Info.field_0x1c;
+	Radius = GSoundInfo::Info.Radius;
 }
 
 float GSoundMap::GetVolumePercentageForHeight(const LHPoint& pos)
 {
 	LH3DMapCoords mapCoords(pos.x, pos.z);
 	float         height = ReceiverPos.y - LH3DIsland::GetAltitude(mapCoords);
-	if (height < GSoundInfo::Info.field_0x24)
+	if (height < GSoundInfo::Info.FullVolumeHeight)
 	{
 		return 1.0f;
 	}
-	if (height <= GSoundInfo::Info.field_0x28)
+	if (height <= GSoundInfo::Info.ZeroVolumeHeight)
 	{
-		float volume =
-			1.0f - (height - GSoundInfo::Info.field_0x24) / (GSoundInfo::Info.field_0x28 - GSoundInfo::Info.field_0x24);
+		float volume = 1.0f - (height - GSoundInfo::Info.FullVolumeHeight) /
+		                          (GSoundInfo::Info.ZeroVolumeHeight - GSoundInfo::Info.FullVolumeHeight);
 		if (0.0f <= volume)
 		{
 			return volume;
@@ -144,57 +134,57 @@ float GSoundMap::GetVolumePercentageForHeight(const LHPoint& pos)
 	return 0.0f;
 }
 
-void GSoundMap::CalculateAtmosWeightings(float* param_1, float* param_2, float* param_3)
+void GSoundMap::CalculateAtmosWeightings(float* ground_weight, float* air_weight, float* receiver_ground_weight)
 {
 	float receiverHeight = ReceiverHeight;
 	float heightAboveLand = HeightAboveLand;
-	if (heightAboveLand < GSoundInfo::Info.field_0x24)
+	if (heightAboveLand < GSoundInfo::Info.FullVolumeHeight)
 	{
-		*param_1 = 1.0f;
+		*ground_weight = 1.0f;
 	}
-	else if (heightAboveLand > GSoundInfo::Info.field_0x28)
+	else if (heightAboveLand > GSoundInfo::Info.ZeroVolumeHeight)
 	{
-		*param_1 = 0.0f;
-	}
-	else
-	{
-		*param_1 = 1.0f - (heightAboveLand - GSoundInfo::Info.field_0x24) /
-		                      (GSoundInfo::Info.field_0x28 - GSoundInfo::Info.field_0x24);
-		*param_1 = max(0.0f, *param_1);
-	}
-	if (receiverHeight < GSoundInfo::Info.field_0x24)
-	{
-		*param_3 = 1.0f;
-	}
-	else if (receiverHeight > GSoundInfo::Info.field_0x28)
-	{
-		*param_3 = 0.0f;
+		*ground_weight = 0.0f;
 	}
 	else
 	{
-		*param_3 = 1.0f - (receiverHeight - GSoundInfo::Info.field_0x24) /
-		                      (GSoundInfo::Info.field_0x28 - GSoundInfo::Info.field_0x24);
-		*param_3 = max(0.0f, *param_3);
+		*ground_weight = 1.0f - (heightAboveLand - GSoundInfo::Info.FullVolumeHeight) /
+		                            (GSoundInfo::Info.ZeroVolumeHeight - GSoundInfo::Info.FullVolumeHeight);
+		*ground_weight = max(0.0f, *ground_weight);
 	}
-	if (heightAboveLand < GSoundInfo::Info.field_0x2c)
+	if (receiverHeight < GSoundInfo::Info.FullVolumeHeight)
 	{
-		*param_2 = 0.0f;
+		*receiver_ground_weight = 1.0f;
 	}
-	else if (heightAboveLand < GSoundInfo::Info.field_0x30)
+	else if (receiverHeight > GSoundInfo::Info.ZeroVolumeHeight)
 	{
-		*param_2 = (heightAboveLand - GSoundInfo::Info.field_0x2c) /
-		           (GSoundInfo::Info.field_0x30 - GSoundInfo::Info.field_0x2c);
-		*param_2 = min(1.0f, *param_2);
-	}
-	else if (heightAboveLand < GSoundInfo::Info.field_0x34)
-	{
-		*param_2 = 1.0f - (heightAboveLand - GSoundInfo::Info.field_0x30) /
-		                      (GSoundInfo::Info.field_0x34 - GSoundInfo::Info.field_0x30);
-		*param_2 = max(0.0f, *param_2);
+		*receiver_ground_weight = 0.0f;
 	}
 	else
 	{
-		*param_2 = 0.0f;
+		*receiver_ground_weight = 1.0f - (receiverHeight - GSoundInfo::Info.FullVolumeHeight) /
+		                                     (GSoundInfo::Info.ZeroVolumeHeight - GSoundInfo::Info.FullVolumeHeight);
+		*receiver_ground_weight = max(0.0f, *receiver_ground_weight);
+	}
+	if (heightAboveLand < GSoundInfo::Info.AirStartHeight)
+	{
+		*air_weight = 0.0f;
+	}
+	else if (heightAboveLand < GSoundInfo::Info.AirPeakHeight)
+	{
+		*air_weight = (heightAboveLand - GSoundInfo::Info.AirStartHeight) /
+		              (GSoundInfo::Info.AirPeakHeight - GSoundInfo::Info.AirStartHeight);
+		*air_weight = min(1.0f, *air_weight);
+	}
+	else if (heightAboveLand < GSoundInfo::Info.AirEndHeight)
+	{
+		*air_weight = 1.0f - (heightAboveLand - GSoundInfo::Info.AirPeakHeight) /
+		                         (GSoundInfo::Info.AirEndHeight - GSoundInfo::Info.AirPeakHeight);
+		*air_weight = max(0.0f, *air_weight);
+	}
+	else
+	{
+		*air_weight = 0.0f;
 	}
 }
 

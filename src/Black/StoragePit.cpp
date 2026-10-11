@@ -137,11 +137,11 @@ MapCoords StoragePit::GetResourcePos(RESOURCE_TYPE type, unsigned long index)
 	MapCoords pos;
 	if (type == RESOURCE_TYPE_FOOD)
 	{
-		GetSpecialPos(index + STORAGE_PIT_SPECIAL_POS_FOOD_PILE, &pos);
+		GetSpecialPos(index + STORAGE_PIT_SPECIAL_POS_FOOD_PILE_FIRST, &pos);
 	}
 	else if (type == RESOURCE_TYPE_WOOD)
 	{
-		GetSpecialPos(index + STORAGE_PIT_SPECIAL_POS_WOOD_PILE, &pos);
+		GetSpecialPos(index + STORAGE_PIT_SPECIAL_POS_WOOD_PILE_FIRST, &pos);
 	}
 	else
 	{
@@ -153,7 +153,7 @@ MapCoords StoragePit::GetResourcePos(RESOURCE_TYPE type, unsigned long index)
 MapCoords StoragePit::GetTownDesireFlagPos(unsigned long index)
 {
 	MapCoords pos;
-	GetSpecialPos(index + STORAGE_PIT_SPECIAL_POS_TOWN_DESIRE_FLAG, &pos);
+	GetSpecialPos(index + STORAGE_PIT_SPECIAL_POS_TOWN_DESIRE_FLAG_FIRST, &pos);
 	return pos;
 }
 
@@ -329,7 +329,7 @@ bool32_t StoragePit::DoCreatureMimicAfterAddingResource(RESOURCE_TYPE type, GInt
 	{
 		if (type == RESOURCE_TYPE_FOOD)
 		{
-			GPlayer* owner = (GPlayer*)status.field_0x128;
+			GPlayer* owner = status.LastDroppedObjectOwner;
 			if (owner != status.GetPlayer())
 			{
 				status.GetPlayer()->ConsiderMakingCreatureMimicPlayer(
@@ -346,7 +346,7 @@ bool32_t StoragePit::DoCreatureMimicAfterAddingResource(RESOURCE_TYPE type, GInt
 		}
 		else
 		{
-			GPlayer* owner = (GPlayer*)status.field_0x128;
+			GPlayer* owner = status.LastDroppedObjectOwner;
 			if (owner != status.GetPlayer())
 			{
 				status.GetPlayer()->ConsiderMakingCreatureMimicPlayer(

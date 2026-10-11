@@ -17,11 +17,11 @@ class EditorIconPlace
 public:
 	EditorIconBase* Parent; /* 0x0 */
 	EditorIconShow* Icon;
-	uint32_t        field_0x8;
-	uint32_t        field_0xc;
+	uint32_t        Row;
+	uint32_t        Column;
 	int             Y; /* 0x10 */
 	int             X;
-	uint32_t        field_0x18;
+	uint32_t        Flags;
 
 	// Constructors
 

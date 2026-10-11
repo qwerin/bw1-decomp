@@ -11,6 +11,8 @@
 
 #include "DrawingObject.h" /* For struct DrawingObject */
 
+#define VALUE_SPINNER_RISE_SPEED 10.0f
+
 struct ValueSpinner : public DrawingObject
 {
 	enum TEXTTYPE_ENUM

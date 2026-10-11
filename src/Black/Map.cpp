@@ -2,9 +2,6 @@
 #include "MapCellConstants.h"
 #include "Map.h"
 
-#define MAP_CELL_OUTLINE_HEIGHT 0.3f
-#define MAP_CELL_COLOUR_MAX     0xff
-
 #include <stdio.h> /* For sprintf */
 
 #include <Lionhead/LH3DLib/development/LH3DColor.h>
@@ -183,16 +180,16 @@ Object* MapCell::FindTypeOnMap(OBJECT_TYPE type, Object* object) const
 	return NULL;
 }
 
-Fixed* MapCell::FindFixedOnMap(Object* param_1)
+Fixed* MapCell::FindFixedOnMap(Object* object)
 {
 	Object* current;
-	if (param_1 == NULL)
+	if (object == NULL)
 	{
 		current = FirstObjectFixed;
 	}
 	else
 	{
-		current = param_1->GetMapChild(*this);
+		current = object->GetMapChild(*this);
 	}
 	while (current != NULL && (current->Flags & GAME_THING_WITH_POS_FLAG_FIXED) == 0)
 	{
@@ -203,7 +200,7 @@ Fixed* MapCell::FindFixedOnMap(Object* param_1)
 
 void GMap::CalculateMapInfluence()
 {
-	Count0x200044 = 0;
+	InfluenceX = 0;
 	for (int i = 0; i < (int)CellExtentZx[1]; i++)
 	{
 		CalculateMapInfluenceX();
@@ -212,10 +209,10 @@ void GMap::CalculateMapInfluence()
 
 void GMap::CalculateMapInfluenceX()
 {
-	Count0x200044++;
-	if (Count0x200044 >= CellExtentZx[0])
+	InfluenceX++;
+	if (InfluenceX >= CellExtentZx[0])
 	{
-		Count0x200044 = 0;
+		InfluenceX = 0;
 	}
 }
 
@@ -265,32 +262,32 @@ void MapCell::ShowMapCell(LH3DColor* color)
 	LH3DColor white;
 	if (color == NULL)
 	{
-		white.b = MAP_CELL_COLOUR_MAX;
-		white.g = MAP_CELL_COLOUR_MAX;
-		white.r = MAP_CELL_COLOUR_MAX;
-		white.a = MAP_CELL_COLOUR_MAX;
+		white.b = 0xff;
+		white.g = 0xff;
+		white.r = 0xff;
+		white.a = 0xff;
 		color = &white;
 	}
 	LH3DColor lineColor = *color;
 
 	float   z = GetZ() * MetresPerMapCell;
 	LHPoint corners[MAP_CELL_CORNER_COUNT];
-	corners[0].x = GetX() * MetresPerMapCell;
-	corners[0].y = 0.0f;
-	corners[0].z = z;
-	corners[2].x = corners[1].x = MetresPerMapCell + corners[0].x;
-	corners[1].y = 0.0f;
-	corners[1].z = z;
-	corners[2].y = 0.0f;
-	corners[3].z = corners[2].z = MetresPerMapCell + z;
-	corners[3].x = corners[0].x;
-	corners[3].y = 0.0f;
-	corners[0].y = LH3DIsland::GetAltitude(corners[0]) + MAP_CELL_OUTLINE_HEIGHT;
-	corners[1].y = LH3DIsland::GetAltitude(corners[1]) + MAP_CELL_OUTLINE_HEIGHT;
-	corners[2].y = LH3DIsland::GetAltitude(corners[2]) + MAP_CELL_OUTLINE_HEIGHT;
-	corners[3].y = LH3DIsland::GetAltitude(corners[3]) + MAP_CELL_OUTLINE_HEIGHT;
-	LH3DLine::AddLine(corners[0], corners[1], &lineColor, NULL);
-	LH3DLine::AddLine(corners[1], corners[2], &lineColor, NULL);
-	LH3DLine::AddLine(corners[2], corners[3], &lineColor, NULL);
-	LH3DLine::AddLine(corners[3], corners[0], &lineColor, NULL);
+	corners[MAP_CELL_CORNER_00].x = GetX() * MetresPerMapCell;
+	corners[MAP_CELL_CORNER_00].y = 0.0f;
+	corners[MAP_CELL_CORNER_00].z = z;
+	corners[MAP_CELL_CORNER_11].x = corners[MAP_CELL_CORNER_10].x = MetresPerMapCell + corners[MAP_CELL_CORNER_00].x;
+	corners[MAP_CELL_CORNER_10].y = 0.0f;
+	corners[MAP_CELL_CORNER_10].z = z;
+	corners[MAP_CELL_CORNER_11].y = 0.0f;
+	corners[MAP_CELL_CORNER_01].z = corners[MAP_CELL_CORNER_11].z = MetresPerMapCell + z;
+	corners[MAP_CELL_CORNER_01].x = corners[MAP_CELL_CORNER_00].x;
+	corners[MAP_CELL_CORNER_01].y = 0.0f;
+	corners[MAP_CELL_CORNER_00].y = LH3DIsland::GetAltitude(corners[MAP_CELL_CORNER_00]) + MAP_CELL_OUTLINE_HEIGHT;
+	corners[MAP_CELL_CORNER_10].y = LH3DIsland::GetAltitude(corners[MAP_CELL_CORNER_10]) + MAP_CELL_OUTLINE_HEIGHT;
+	corners[MAP_CELL_CORNER_11].y = LH3DIsland::GetAltitude(corners[MAP_CELL_CORNER_11]) + MAP_CELL_OUTLINE_HEIGHT;
+	corners[MAP_CELL_CORNER_01].y = LH3DIsland::GetAltitude(corners[MAP_CELL_CORNER_01]) + MAP_CELL_OUTLINE_HEIGHT;
+	LH3DLine::AddLine(corners[MAP_CELL_CORNER_00], corners[MAP_CELL_CORNER_10], &lineColor, NULL);
+	LH3DLine::AddLine(corners[MAP_CELL_CORNER_10], corners[MAP_CELL_CORNER_11], &lineColor, NULL);
+	LH3DLine::AddLine(corners[MAP_CELL_CORNER_11], corners[MAP_CELL_CORNER_01], &lineColor, NULL);
+	LH3DLine::AddLine(corners[MAP_CELL_CORNER_01], corners[MAP_CELL_CORNER_00], &lineColor, NULL);
 }

@@ -98,6 +98,8 @@ struct PlayerTownInteract
 	void Process(Town* town);
 };
 
+#define TOWN_ID_NONE -1
+
 class Town : public Container
 {
 public:

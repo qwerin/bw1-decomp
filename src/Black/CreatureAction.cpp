@@ -4,20 +4,7 @@
 #include "GameTimeConstants.h"
 #include "CreatureAction.h"
 
-struct CreatureActionTableEntry
-{
-	const char* Name;
-	bool32_t (Creature::*IsPossible)(CreaturePlan& plan, CREATURE_ACTION action);
-	int (CreatureAgenda::*ConstructSubActions)(unsigned long action_argument);
-	MAGIC_TYPE MagicType;
-	bool32_t (GameThingWithPos::*IsValidObjectToActOn)(Creature* creature);
-	bool32_t (GameThingWithPos::*IsValidObjectToUse)(Creature* creature);
-	bool32_t (GameThingWithPos::*IsValidObjectToUseToo)(Creature* creature);
-	uint32_t (GameThingWithPos::*AttitudeToCreature)();
-	bool32_t NeedsObjectToUse;
-	float (GameThingWithPos::*UsefulnessMultiplier)(Creature* creature);
-};
-static_assert(sizeof(CreatureActionTableEntry) == 0x50, "Data type is of wrong size");
+#include "CreatureActionTableEntry.h"
 
 #include <Lionhead/LH3DLib/development/LH3DAtmos.h>  /* For LH3DAtmos::GetMoonPos */
 #include <Lionhead/LH3DLib/development/LH3DObject.h> /* For struct LH3DObject */

@@ -6,11 +6,11 @@
 EditorIconPlace::EditorIconPlace()
 {
 	Icon = NULL;
-	field_0x8 = 0;
+	Row = 0;
 	X = 0;
 	Y = 0;
-	field_0xc = 0;
-	field_0x18 = 0;
+	Column = 0;
+	Flags = 0;
 }
 
 EditorIconPlace::~EditorIconPlace()

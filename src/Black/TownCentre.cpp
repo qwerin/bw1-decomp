@@ -24,11 +24,6 @@
 
 #define TOWN_CENTRE_FILE "C:\\dev\\MP\\Black\\TownCentre.cpp"
 
-// Fixed-point factor for the angle, scale and worship speed in the script command written by SaveObject.
-#define TOWN_CENTRE_SCRIPT_SCALE     1000
-#define TOWN_CENTRE_NO_TOWN_ID       -1
-#define TOWN_CENTRE_REPLACEMENT_WOOD 1
-
 TownCentre::TownCentre(const MapCoords& coords, const GAbodeInfo* info, Town* town, float y_angle, float scale,
                        float food, int wood)
 	: Abode(coords, info, town, y_angle, scale, food, wood)
@@ -57,16 +52,16 @@ void TownCentre::SetToZero()
 	}
 }
 
-void TownCentre::ToBeDeleted(int param_1)
+void TownCentre::ToBeDeleted(int delete_now)
 {
-	fn_0069BCA0();
+	DeletePSys();
 	DeleteDependancys();
 	if (totem_statue.Get() != NULL)
 	{
-		totem_statue.Get()->ToBeDeleted(param_1);
+		totem_statue.Get()->ToBeDeleted(delete_now);
 	}
 	GGame::g_game->GameLists.TownCentres.Remove(this);
-	Abode::ToBeDeleted(param_1);
+	Abode::ToBeDeleted(delete_now);
 }
 
 bool TownCentre::InteractsWithPhysicsObjects()
@@ -88,12 +83,12 @@ TownCentre* TownCentre::Create(const MapCoords& coords, const GAbodeInfo* info, 
 	TownCentre* centre = new (TOWN_CENTRE_FILE, 124) TownCentre(coords, info, town, y_angle, scale, food, wood);
 	if (centre != NULL)
 	{
-		centre->fn_00743D90();
+		centre->PostCreate();
 	}
 	return centre;
 }
 
-void TownCentre::fn_00743D90()
+void TownCentre::PostCreate()
 {
 	CallVirtualFunctionsForCreation(Pos);
 }
@@ -164,23 +159,23 @@ MapCoords TownCentre::GetArrivePos()
 	return Pos;
 }
 
-void TownCentre::StopBeingFunctional(GPlayer* param_1)
+void TownCentre::StopBeingFunctional(GPlayer* player)
 {
-	Abode::StopBeingFunctional(param_1);
+	Abode::StopBeingFunctional(player);
 	if (GetTown() != NULL)
 	{
 		GetTown()->SetWorshipPercentage(0.0f);
 	}
 }
 
-uint32_t TownCentre::GetDiscipleStateIfInteractedWith(GInterfaceStatus* param_1, Villager* param_2)
+uint32_t TownCentre::GetDiscipleStateIfInteractedWith(GInterfaceStatus* status, Villager* villager)
 {
-	uint32_t state = Abode::GetDiscipleStateIfInteractedWith(param_1, param_2);
+	uint32_t state = Abode::GetDiscipleStateIfInteractedWith(status, villager);
 	if (state == VILLAGER_DISCIPLE_MISSIONARY || state == VILLAGER_DISCIPLE_BUILDER)
 	{
 		return state;
 	}
-	if (GetTown() == param_2->GetTown())
+	if (GetTown() == villager->GetTown())
 	{
 		return state;
 	}
@@ -211,9 +206,9 @@ float TownCentre::IncreaseLife(float value)
 	return life;
 }
 
-void TownCentre::ReactToPhysicsImpact(PhysicsObject* param_1, bool param_2)
+void TownCentre::ReactToPhysicsImpact(PhysicsObject* physics, bool transferred_damage)
 {
-	Abode::ReactToPhysicsImpact(param_1, param_2);
+	Abode::ReactToPhysicsImpact(physics, transferred_damage);
 }
 
 PlannedMultiMapFixed* TownCentre::ConvertToPlanned()
@@ -239,10 +234,10 @@ PlannedTownCentre::PlannedTownCentre(const MapCoords& coords, const GAbodeInfo* 
 {
 }
 
-PlannedTownCentre* PlannedTownCentre::Create(const MapCoords& coords, const GAbodeInfo* info, Town* town, float param_4,
-                                             float param_5)
+PlannedTownCentre* PlannedTownCentre::Create(const MapCoords& coords, const GAbodeInfo* info, Town* town, float y_angle,
+                                             float scale)
 {
-	PlannedTownCentre* planned = new (TOWN_CENTRE_FILE, 505) PlannedTownCentre(coords, info, town, param_4, param_5);
+	PlannedTownCentre* planned = new (TOWN_CENTRE_FILE, 505) PlannedTownCentre(coords, info, town, y_angle, scale);
 	planned->Init(town);
 	return planned;
 }
@@ -251,7 +246,7 @@ MultiMapFixed* PlannedTownCentre::CreatePlannedNoFixedCheck(float food)
 {
 	float       yAngle = YAngle;
 	TownCentre* centre =
-		TownCentre::Create(Pos, GetInfo(), GetTown(), yAngle, GetScale(), food, TOWN_CENTRE_REPLACEMENT_WOOD);
+		TownCentre::Create(Pos, GetInfo(), GetTown(), yAngle, GetScale(), food, TOWN_CENTRE_INITIAL_WOOD);
 	if (centre != NULL)
 	{
 		PostCreatePlanned(*centre);
@@ -294,7 +289,7 @@ TownCentreSpellIcon* TownCentre::FindSpellIcon(SPELL_SEED_TYPE type)
 	return NULL;
 }
 
-int TownCentre::fn_00743FF0(TownCentreSpellIcon* icon)
+int TownCentre::GetSpellIconIndex(TownCentreSpellIcon* icon)
 {
 	for (int i = 0; i < MAX_TOWN_CENTRE_SPELLS; i++)
 	{
@@ -324,7 +319,7 @@ void TownCentre::RemovePowerUp(SPELL_SEED_TYPE seed_type, POWER_UP_TYPE power_up
 	}
 }
 
-void TownCentre::fn_00744290(TownCentreSpellIcon* icon)
+void TownCentre::RemoveSpellIcon(TownCentreSpellIcon* icon)
 {
 	for (int i = 0; i < MAX_TOWN_CENTRE_SPELLS; i++)
 	{
@@ -385,7 +380,7 @@ void TownCentre::MakeFunctional()
 	}
 }
 
-uint32_t TownCentre::SaveObject(LHOSFile& param_1, const MapCoords* param_2)
+uint32_t TownCentre::SaveObject(LHOSFile& file, const MapCoords* coords)
 {
 	char text[200];
 	char abodeText[100];
@@ -393,32 +388,33 @@ uint32_t TownCentre::SaveObject(LHOSFile& param_1, const MapCoords* param_2)
 
 	if ((FixedFlags & FIXED_FLAG_UNDER_CONSTRUCTION) != 0)
 	{
-		return Abode::SaveObject(param_1, param_2);
+		return Abode::SaveObject(file, coords);
 	}
 	uint32_t saved = CheckAndSetSaved();
 	if (saved == 1)
 	{
-		MapCoords    relative = (param_2 != NULL) ? (Pos - *param_2) : Pos;
-		int          townId = (GetTown() != NULL) ? GetTown()->ID : TOWN_CENTRE_NO_TOWN_ID;
+		MapCoords    relative = (coords != NULL) ? (Pos - *coords) : Pos;
+		int          townId = (GetTown() != NULL) ? GetTown()->ID : TOWN_ID_NONE;
 		TotemStatue* totem = totem_statue.Get();
 		float        scale = GetScale();
 		float        yAngle = GetYAngle();
 		sprintf(text, GSetup::GetCommandAsText(SCRIPT_FEATURE_COMMANDS_CREATE_TOWN_CENTRE), townId,
-		        relative.ConvertToText(coordText), GetAbodeText(abodeText), (int)(yAngle * TOWN_CENTRE_SCRIPT_SCALE),
-		        (int)(scale * TOWN_CENTRE_SCRIPT_SCALE), (int)(totem->WorshipSpeed * TOWN_CENTRE_SCRIPT_SCALE));
-		GSetup::WriteToFile(this, param_1, text, strlen(text));
+		        relative.ConvertToText(coordText), GetAbodeText(abodeText),
+		        (int)(yAngle * TOWN_CENTRE_SCRIPT_FIXED_POINT), (int)(scale * TOWN_CENTRE_SCRIPT_FIXED_POINT),
+		        (int)(totem->WorshipSpeed * TOWN_CENTRE_SCRIPT_FIXED_POINT));
+		GSetup::WriteToFile(this, file, text, strlen(text));
 		return 1;
 	}
 	return saved;
 }
 
-bool32_t TownCentre::fn_00743F60(MapCoords& coords, float& y_angle)
+bool32_t TownCentre::GetNextSpellIconPos(MapCoords& coords, float& y_angle)
 {
 	for (int i = 0; i < MAX_TOWN_CENTRE_SPELLS; i++)
 	{
 		if (icons[i] == NULL)
 		{
-			return Game3dObject->GetSpecialPos(i, coords, y_angle) != 0;
+			return Game3dObject->GetSpecialPos(i + TOWN_CENTRE_SPECIAL_POS_SPELL_ICON_FIRST, coords, y_angle) != 0;
 		}
 	}
 	return false;

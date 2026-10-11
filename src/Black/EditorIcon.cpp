@@ -10,32 +10,21 @@
 #include "Game3DObject.h" /* For Game3DObject::Create */
 #include "Object.h"       /* For Object::Get3DType */
 
-static bool32_t EditorIconTextFitsRegion = true;
+static bool32_t ResizeRegionToText = true;
 
-#define EDITOR_ICON_FILE           "C:\\dev\\MP\\Black\\EditorIcon.cpp"
-#define EDITOR_ICON_NO_MESH        -1
-#define EDITOR_ICON_DEFAULT_HEIGHT 14
-
-enum
-{
-	EDITOR_ICON_G3D_OBJECT_SIZE = 96,
-	EDITOR_ICON_G3D_OBJECT_INSET = 4,
-	EDITOR_ICON_G3D_OBJECT_HALF = 32,
-	EDITOR_ICON_TEXT_PADDING = 4,
-	EDITOR_ICON_BOX_OPAQUE = 0xff
-};
+#define EDITOR_ICON_FILE "C:\\dev\\MP\\Black\\EditorIcon.cpp"
 
 EditorIconShow::EditorIconShow(LHRegion region, const char* text, unsigned long flags, LH3DColor* active_color,
                                LH3DColor* inactive_color, LH3DColor* hilite_color, LH3DColor* text_color)
 {
 	Flags = flags;
 	Region = region;
-	Init(text, (MESH_LIST)EDITOR_ICON_NO_MESH, active_color, inactive_color, hilite_color, text_color);
+	Init(text, MSH_INVALID, active_color, inactive_color, hilite_color, text_color);
 }
 
 EditorIconShow::~EditorIconShow()
 {
-	SetG3DObject((MESH_LIST)EDITOR_ICON_NO_MESH, 0);
+	SetG3DObject(MSH_INVALID, 0);
 }
 
 void EditorIconShow::Init(const char* text, MESH_LIST mesh, LH3DColor* active_color, LH3DColor* inactive_color,
@@ -53,7 +42,7 @@ void EditorIconShow::Init(const char* text, MESH_LIST mesh, LH3DColor* active_co
 	LeftClicked = false;
 	SetG3DObject(mesh, 0);
 	SetText(text);
-	field_0x40 = 0;
+	HiliteTime = 0;
 }
 
 int EditorIconShow::MakeActive()
@@ -68,7 +57,7 @@ EditorIconShow::EditorIconShow(const LHCoord& position, const char* text, unsign
 {
 	Flags = flags;
 	Region = LHRegion(position.x, position.y, 0, EDITOR_ICON_DEFAULT_HEIGHT);
-	Init(text, (MESH_LIST)EDITOR_ICON_NO_MESH, active_color, inactive_color, hilite_color, text_color);
+	Init(text, MSH_INVALID, active_color, inactive_color, hilite_color, text_color);
 }
 
 void EditorIconShow::SetTextToConstant(const char* text)
@@ -108,21 +97,21 @@ void EditorIconShow::GetG3DObjectRegion(LHRegion& region)
 {
 	long height = region.Height();
 	long x = region.end.x - EDITOR_ICON_G3D_OBJECT_INSET;
-	long y = region.start.y + height / 2 - EDITOR_ICON_G3D_OBJECT_HALF;
+	long y = region.start.y + height / 2 - EDITOR_ICON_G3D_OBJECT_VERTICAL_OFFSET;
 	region.start.x = x;
 	region.start.y = y;
 	region.end.x = x + EDITOR_ICON_G3D_OBJECT_SIZE - 1;
 	region.end.y = y + EDITOR_ICON_G3D_OBJECT_SIZE - 1;
 }
 
-void EditorIconShow::SetG3DObject(MESH_LIST mesh, int param_2)
+void EditorIconShow::SetG3DObject(MESH_LIST mesh, int position_object)
 {
-	if (mesh == 0)
+	if (mesh == MSH_DUMMY)
 	{
-		Mesh = (MESH_LIST)EDITOR_ICON_NO_MESH;
+		Mesh = MSH_INVALID;
 		return;
 	}
-	if (mesh != EDITOR_ICON_NO_MESH)
+	if (mesh != MSH_INVALID)
 	{
 		if (Object == NULL)
 		{
@@ -132,7 +121,7 @@ void EditorIconShow::SetG3DObject(MESH_LIST mesh, int param_2)
 		{
 			Object->SetMesh(LH3DMesh::GetPackedMesh(mesh), NULL, NULL);
 			LHRegion region = *GetRegion();
-			if (param_2 != 0)
+			if (position_object != 0)
 			{
 				GetG3DObjectRegion(region);
 			}
@@ -147,7 +136,7 @@ void EditorIconShow::Draw(bool32_t parent_active)
 	LH3DColor* color = IsActive() ? &ActiveColor : &InactiveColor;
 	DrawBox(0);
 	DrawTextString(color, GetRegion());
-	if (Mesh != EDITOR_ICON_NO_MESH && IsActive() && Mesh != MSH_I_OFFERING_PLAY)
+	if (Mesh != MSH_INVALID && IsActive() && Mesh != MSH_I_OFFERING_PLAY)
 	{
 		SetG3DObject(Mesh, 1);
 	}
@@ -347,7 +336,7 @@ void EditorIconShow::SetText(const char* text)
 	{
 		Text = (char*)text;
 	}
-	if (Text != NULL && *Text != 0 && EditorIconTextFitsRegion)
+	if (Text != NULL && *Text != 0 && ResizeRegionToText)
 	{
 		int width = LHSys::TheSystem.text.StringWidth(Text, NULL);
 		width += EDITOR_ICON_TEXT_PADDING;
@@ -373,32 +362,32 @@ int EditorIconRequester::IsActive()
 int EditorIconRequester::Process()
 {
 	Active = Region.CoordInRegion(LHSys::TheSystem.mouse.Pos());
-	if (field_0x3c != NULL)
+	if (CancelButton != NULL)
 	{
-		Active |= field_0x3c->Process();
+		Active |= CancelButton->Process();
 	}
-	if (field_0x38 != NULL)
+	if (AcceptButton != NULL)
 	{
-		Active |= field_0x38->Process();
+		Active |= AcceptButton->Process();
 	}
 	return Active;
 }
 
 void EditorIconRequester::Draw(bool32_t parent_active)
 {
-	DrawBox(&Region, &Colour, EDITOR_ICON_BOX_OPAQUE, 0);
+	DrawBox(&Region, &Colour, EDITOR_ICON_ALPHA_OPAQUE, 0);
 	DrawBubbleBox(GetRegion(), GetInactiveColor());
-	if (field_0x34 != NULL)
+	if (Label != NULL)
 	{
-		field_0x34->Draw(false);
+		Label->Draw(false);
 	}
-	if (field_0x3c != NULL)
+	if (CancelButton != NULL)
 	{
-		field_0x3c->Draw(false);
+		CancelButton->Draw(false);
 	}
-	if (field_0x38 != NULL)
+	if (AcceptButton != NULL)
 	{
-		field_0x38->Draw(false);
+		AcceptButton->Draw(false);
 	}
 }
 
@@ -406,12 +395,12 @@ void EditorIconEditBox::Draw(bool32_t parent_active)
 {
 	if (IsActive())
 	{
-		DrawBox(GetRegion(), GetActiveColor(), EDITOR_ICON_BOX_OPAQUE, 0);
+		DrawBox(GetRegion(), GetActiveColor(), EDITOR_ICON_ALPHA_OPAQUE, 0);
 		DrawTextString(GetActiveColor(), GetRegion());
 	}
 	else
 	{
-		DrawBox(GetRegion(), GetInactiveColor(), EDITOR_ICON_BOX_OPAQUE, 0);
+		DrawBox(GetRegion(), GetInactiveColor(), EDITOR_ICON_ALPHA_OPAQUE, 0);
 		DrawTextString(GetInactiveColor(), GetRegion());
 	}
 }

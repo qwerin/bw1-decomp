@@ -9,19 +9,20 @@
 
 #include "DrawingObject.h" /* For struct DrawingObject */
 
-enum
-{
-	POWER_SPIN_TRAIL_LENGTH = 64,
-	POWER_SPIN_TEXT_LENGTH = 66
-};
+#define POWER_SPIN_TRAIL_LENGTH       64
+#define POWER_SPIN_TRAIL_MASK         (POWER_SPIN_TRAIL_LENGTH - 1)
+#define POWER_SPIN_TEXT_LENGTH        66
+#define POWER_SPIN_LETTER_SPACING     0.2f
+#define POWER_SPIN_TRAIL_INTERVAL     1.0f
+#define POWER_SPIN_RUNNER_DIRECTION_Y -1.0f
 
 struct PowerSpinPos
 {
 	LHPoint Position;  /* 0x0 */
 	LHPoint Direction; /* 0xc */
-	float   field_0x18;
-	float   field_0x1c;
-	int     field_0x20;
+	float   Size;
+	float   Spin;
+	int     Alpha;
 };
 static_assert(sizeof(PowerSpinPos) == 0x24, "Data type is of wrong size");
 
@@ -30,9 +31,9 @@ class PowerSpin : public DrawingObject
 public:
 	wchar_t      Text[POWER_SPIN_TEXT_LENGTH]; /* 0x4 */
 	int          TextLength;
-	int          field_0x8c;
+	int          FontStyle;
 	int          FontType;
-	float        field_0x94;
+	float        LetterSpacing;
 	int          TrailHead;
 	int          TrailCount;
 	float        TrailTime;
@@ -43,10 +44,9 @@ public:
 	// Virtual methods
 
 	// BW1W120 0066fcb0 BW1M119 01127140
-	virtual void Init(wchar_t* text, const LHPoint& pos, const LHPoint& direction, float param_4, float param_5,
-	                  int param_6);
+	virtual void Init(wchar_t* text, const LHPoint& pos, const LHPoint& direction, float size, float spin, int alpha);
 	// BW1W120 0066fd80 BW1M119 01127000
-	virtual PowerSpin* Update(const LHPoint& pos, const LHPoint& direction, float param_3, float param_4, int param_5,
+	virtual PowerSpin* Update(const LHPoint& pos, const LHPoint& direction, float size, float spin, int alpha,
 	                          float time);
 	// BW1W120 0066fe80 BW1M119 011268e0
 	virtual void Draw();
@@ -58,8 +58,8 @@ class PowerSpinRunner : public PowerSpin
 public:
 	PowerSpinRunner* Next; /* 0x9b4 */
 	float            Time;
-	bool             field_0x9bc;
-	LHPoint          field_0x9c0;
+	bool             Persistent;
+	LHPoint          StartPos;
 
 	// BW1W120 00d4de74
 	static PowerSpinRunner* First;
@@ -67,7 +67,7 @@ public:
 	// Static methods
 
 	// BW1W120 0066f730 BW1M119 01127980
-	static PowerSpinRunner* Create(wchar_t* text, const LHPoint& pos, const LH3DColor& colour, bool param_4);
+	static PowerSpinRunner* Create(wchar_t* text, const LHPoint& pos, const LH3DColor& colour, bool persistent);
 
 	// Constructors
 

@@ -16,12 +16,10 @@
 #include "Utils.h"
 #include "VirtualInfluence.h"
 
-#define OUTER_RING_INFLUENCE_FRACTION 0.2
-
 #define FILEPATH "C:\\dev\\MP\\Black\\Influence.h"
 
-float Influence::CalculatePlayerInfluence(const MapCoords& pos, GPlayer* player, int param_3, INFL_CALC_TYPE type,
-                                          int param_5)
+float Influence::CalculatePlayerInfluence(const MapCoords& pos, GPlayer* player, int calc_flags, INFL_CALC_TYPE type,
+                                          int include_allies)
 {
 	if (player == NULL)
 	{
@@ -39,17 +37,17 @@ float Influence::CalculatePlayerInfluence(const MapCoords& pos, GPlayer* player,
 			}
 			status = player->GetNextInterfaceStatus(status);
 		}
-		float influence = CalculatePlayerRawInfluence(pos, player, param_3);
-		if (param_5 != 0 && influence <= 0.0f)
+		float influence = CalculatePlayerRawInfluence(pos, player, calc_flags);
+		if (include_allies != 0 && influence <= 0.0f)
 		{
-			return fn_005CD400(pos, player);
+			return CalculateAllyInfluence(pos, player);
 		}
 		return influence;
 	}
 	return 1.0f;
 }
 
-float Influence::fn_005CD400(const MapCoords& pos, GPlayer* player)
+float Influence::CalculateAllyInfluence(const MapCoords& pos, GPlayer* player)
 {
 	GPlayer* ally = player->GetNextAllyPlayer(NULL);
 	while (ally != NULL)
@@ -84,7 +82,7 @@ bool32_t Influence::IsInAntiInfluence(const MapCoords& pos, GPlayer* player)
 	return false;
 }
 
-float Influence::CalculateInfluenceOnRange(float distance, float radius, int param_3)
+float Influence::CalculateInfluenceOnRange(float distance, float radius, int)
 {
 	float inner = GInfluenceInfo::Info.FullInfluenceFraction * radius;
 	if (distance <= inner)
@@ -145,13 +143,13 @@ InfluenceRing::InfluenceRing(GameThingWithPos* thing, GPlayer* player, float rad
 	Anti = anti;
 }
 
-void InfluenceRing::ToBeDeleted(int param_1)
+void InfluenceRing::ToBeDeleted(int delete_now)
 {
 	GGame::g_game->GameLists.InfluenceRingList.Remove(this);
-	GameThingWithPos::ToBeDeleted(param_1);
+	GameThingWithPos::ToBeDeleted(delete_now);
 }
 
-float InfluenceRing::CalculateInfluence(const MapCoords& pos, GPlayer* player, int param_3)
+float InfluenceRing::CalculateInfluence(const MapCoords& pos, GPlayer* player, int calc_flags)
 {
 	if (player != GetPlayer())
 	{
@@ -162,7 +160,7 @@ float InfluenceRing::CalculateInfluence(const MapCoords& pos, GPlayer* player, i
 		return 0.0f;
 	}
 	float distance = GUtils::GetDistanceInMetres(Pos, pos);
-	return ::Influence::CalculateInfluenceOnRange(distance, Influence, param_3);
+	return ::Influence::CalculateInfluenceOnRange(distance, Influence, calc_flags);
 }
 
 void InfluenceRing::SetThing(GameThingWithPos* thing)
@@ -229,7 +227,7 @@ void InfluenceRing::ProcessRings()
 	}
 }
 
-GameThingWithPos* InfluenceRing::fn_005CDBD0()
+GameThingWithPos* InfluenceRing::GetThing()
 {
 	if (!info.IsClear())
 	{
@@ -289,9 +287,9 @@ uint32_t InfluenceRing::Load(GameOSFile& file)
 	return 0;
 }
 
-GBaseInfo* GInfluenceInfo::GetBaseInfo(uint32_t& param_1)
+GBaseInfo* GInfluenceInfo::GetBaseInfo(uint32_t& num_infos)
 {
-	param_1 = 0;
+	num_infos = 0;
 	return NULL;
 }
 

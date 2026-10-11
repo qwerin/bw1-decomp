@@ -4,12 +4,13 @@
 // Forward Declares
 
 struct LH3DMesh;
+struct LHPoint;
 
 class CPController
 {
 public:
-	static void* field_0xc5e3f4;
-	static void* field_0xc5e3f0;
+	static LHPoint* Vertices;
+	static void*    Triangles;
 
 	// BW1W120 00469990 BW1M119 011cc440
 	static void Init();

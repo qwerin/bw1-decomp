@@ -16,8 +16,6 @@ class CreatureAgenda;
 class CreaturePlan;
 class GameThingWithPos;
 
-// Declared while Creature is still incomplete: this fixes the representation of pointers to Creature members
-// for the whole translation unit.
 struct CreatureActionTableEntry
 {
 	const char* Name;

@@ -18,9 +18,15 @@ class Object;
 struct LH3DColor;
 struct MapCellIterator;
 
-enum
+#define MAP_CELLS_PER_SIDE      0x200
+#define MAP_CELL_OUTLINE_HEIGHT 0.3f
+
+enum MAP_CELL_CORNER
 {
-	MAP_CELLS_PER_SIDE = 0x200,
+	MAP_CELL_CORNER_00 = 0,
+	MAP_CELL_CORNER_10 = 1,
+	MAP_CELL_CORNER_11 = 2,
+	MAP_CELL_CORNER_01 = 3,
 	MAP_CELL_CORNER_COUNT = 4,
 };
 
@@ -61,7 +67,7 @@ struct MapCell
 	// BW1W120 00601ba0 BW1M119 01056fe0
 	uint32_t GetZ() const;
 	// BW1W120 00601690 BW1M119 01568c20
-	Fixed* FindFixedOnMap(Object* param_1);
+	Fixed* FindFixedOnMap(Object* object);
 	// BW1W120 inlined BW1M119 013dcd10
 	MapCellIterator GetFirstIterator() const;
 	// BW1W120 00601880 BW1M119 015687d0
@@ -134,7 +140,7 @@ public:
 	uint8_t          field_0x3f;
 	uint32_t         field_0x40;
 	MapCell          cells[MAP_CELLS_PER_SIDE][MAP_CELLS_PER_SIDE];
-	uint16_t         Count0x200044;
+	uint16_t         InfluenceX;
 	uint8_t          field_0x200046;
 	uint8_t          field_0x200047;
 	LHListHead<Base> field_0x200048;

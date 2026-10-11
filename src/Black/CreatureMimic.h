@@ -6,6 +6,7 @@
 
 #include <chlasm/CreatureEnum.h> /* For enum DETECTED_PLAYER_ACTION */
 #include <chlasm/Enum.h>         /* For enum MAGIC_TYPE */
+#include <re_common.h>           /* For bool32_t */
 
 #include "Base.h"      /* For struct Base */
 #include "MapCoords.h" /* For struct MapCoords */
@@ -14,19 +15,22 @@
 
 class GameThingWithPos;
 
+#define MIMIC_STOLEN_OBJECT_CITADEL_RANGE 80.0f
+#define MIMIC_STAGE_LIMIT_RANDOM_RANGE    1
+
 class CreatureMimicState : public Base
 {
 public:
-	uint32_t               field_0x8;
-	uint32_t               field_0xc;
+	bool32_t               Active;
+	bool32_t               Completed;
 	DETECTED_PLAYER_ACTION DetectedPlayerAction; /* 0x10 */
 	MAGIC_TYPE             magic_type;
 	GameThingWithPos*      game_thing;
-	uint32_t               field_0x1c;
+	uint32_t               ObjectMimicType;
 	uint32_t               Stage;
 	uint32_t               StageProgress;
 	uint32_t               StageLimit;
-	uint32_t               field_0x2c;
+	uint32_t               StartTurn;
 	MapCoords              coords;
 
 	// Override methods
