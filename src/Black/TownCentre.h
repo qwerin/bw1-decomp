@@ -135,10 +135,20 @@ public:
 	void ProcessPSys();
 	// BW1W120 0069bd60 BW1M119 01068850
 	void DrawPSys();
+	// BW1W120 00743d90 BW1M119 inlined
+	void fn_00743D90();
+	// BW1W120 0069bca0 BW1M119 inlined
+	void fn_0069BCA0();
 	// BW1W120 00743da0 BW1M119 015649b0
 	bool CreateTotemIfNecessary();
 	// BW1W120 00743f20 BW1M119 015646c0
-	MapCoords* GetTotemPos(MapCoords* coords);
+	MapCoords GetTotemPos();
+	// BW1W120 00743f60 BW1M119 inlined
+	bool32_t fn_00743F60(MapCoords& coords, float& y_angle);
+	// BW1W120 00743ff0 BW1M119 inlined
+	int fn_00743FF0(TownCentreSpellIcon* icon);
+	// BW1W120 00744290 BW1M119 inlined
+	void fn_00744290(TownCentreSpellIcon* icon);
 	// BW1W120 00743fa0 BW1M119 015645f0
 	TownCentreSpellIcon* FindSpellIcon(SPELL_SEED_TYPE type);
 	// BW1W120 00744010 BW1M119 01564490
