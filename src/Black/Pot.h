@@ -167,6 +167,8 @@ public:
 	static uint32_t GetPoisonSpecular();
 	// BW1W120 0066d660 BW1M119 01124ab0
 	void SetupReaction();
+	// BW1W120 0066d6a0 BW1M119 01124a40
+	void RemoveReaction();
 };
 
 #endif /* BW1_DECOMP_POT_INCLUDED_H */

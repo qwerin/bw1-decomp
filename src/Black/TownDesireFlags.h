@@ -83,6 +83,11 @@ public:
 		ParentTown = NULL;
 	}
 
+	// Non-virtual methods
+
+	// BW1W120 inlined BW1M119 0115b040
+	long GetSlot() { return Slot; }
+
 	// Static methods
 
 	// BW1W120 00746df0 BW1M119 015660c0

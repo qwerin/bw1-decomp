@@ -28,12 +28,20 @@ class PileWood;
 class PotStructure;
 class Villager;
 
+#define MAX_FOOD_PILES 1
 #define MAX_WOOD_PILES 5
+
+enum
+{
+	STORAGE_PIT_SPECIAL_POS_WOOD_PILE = 0,
+	STORAGE_PIT_SPECIAL_POS_FOOD_PILE = MAX_WOOD_PILES,
+	STORAGE_PIT_SPECIAL_POS_TOWN_DESIRE_FLAG = 12
+};
 
 class StoragePit : public Abode
 {
 public:
-	PileFood* pile_food;                 /* 0xc4 */
+	PileFood* FoodPiles[MAX_FOOD_PILES]; /* 0xc4 */
 	PileWood* WoodPiles[MAX_WOOD_PILES]; /* 0xc8 */
 
 	// Override methods
@@ -120,6 +128,9 @@ public:
 
 	// BW1W120 inlined BW1M119 inlined
 	StoragePit() {}
+	// BW1W120 00732b90 BW1M119 inlined
+	StoragePit(const MapCoords& coords, const GAbodeInfo* info, Town* town, float y_angle, float scale, float food,
+	           int wood);
 
 	// Static methods
 
@@ -129,6 +140,10 @@ public:
 
 	// Non-virtual methods
 
+	// BW1W120 00732ea0 BW1M119 0115af50
+	void InitDesireFlags();
+	// BW1W120 00733350 BW1M119 0115a5e0
+	MapCoords GetResourcePos(RESOURCE_TYPE type, unsigned long index);
 	// BW1W120 007336e0 BW1M119 0115a060
 	MapCoords GetTownDesireFlagPos(unsigned long index);
 	// BW1W120 007337d0 BW1M119 01159e10
