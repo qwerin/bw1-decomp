@@ -39,8 +39,10 @@ public:
 
 	// BW1W120 inlined BW1M119 inlined
 	PlannedTownCentre() {}
-	// BW1W120 00744460 BW1M119 015639f0
-	PlannedTownCentre(const TownCentre* town_centre);
+	// BW1W120 00744410 BW1M119 015639f0
+	PlannedTownCentre(TownCentre* town_centre);
+	// BW1W120 00744460 BW1M119 inlined
+	PlannedTownCentre(const MapCoords& coords, const GAbodeInfo* info, Town* town, float y_angle, float scale);
 };
 
 #endif /* BW1_DECOMP_PLANNED_TOWN_CENTRE_INCLUDED_H */

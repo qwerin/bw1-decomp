@@ -65,7 +65,7 @@ public:
 	uint32_t           field_0x11c;
 	Object*            LastPickedUpObject;
 	Object*            LastDroppedObject;
-	uint32_t           field_0x128;
+	GPlayer*           LastDroppedObjectOwner;
 	GLeashStatus*      LeashStatus;
 	GVirtualInfluence* influence;
 

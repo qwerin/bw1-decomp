@@ -149,6 +149,8 @@ public:
 
 	// Non-virtual methods
 
+	// BW1W120 007381c0 BW1M119 0154e470
+	void SetPlayersCreature();
 	// BW1W120 00738260 BW1M119 0154e430
 	float GetWorshipSpeed();
 	// BW1W120 00738270 BW1M119 0154e350

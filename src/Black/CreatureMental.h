@@ -68,10 +68,11 @@ public:
 	CreatureInnatePersonality InnatePersonality;
 	CreatureVisionState       VisionState;
 	CreatureExplorationMap    ExplorationMap;
-	uint8_t                   field_0x1ca98[0x400];
 	CreaturePreviousActions   PreviousActions;
 	CreatureLookState         LookState;
-	uint8_t                   field_0x1d3f8[0x14];
+	bool32_t                  FocusIsPosition; /* 0x1d3f8 */
+	GameThingWithPos*         FocusObject;
+	LHPoint                   FocusPosition;
 	CreatureFaceState         FaceState;
 	CreatureObjectsInspected  ObjectsInspected;
 	uint32_t                  field_0x1d480;

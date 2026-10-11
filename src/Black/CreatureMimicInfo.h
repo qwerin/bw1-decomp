@@ -14,7 +14,9 @@ class Base;
 class CreatureMimicInfo : public GBaseInfo
 {
 public:
-	uint8_t field_0x10[0xb0];
+	uint8_t  field_0x10[0xa8];
+	uint32_t BaseStageLimit; /* 0xb8 */
+	uint32_t field_0xbc;
 
 	// Override methods
 
@@ -34,7 +36,7 @@ public:
 	static CreatureMimicInfo* GetInfo() { return Infos; }
 
 	// TODO(#377): The original declared this class in CreatureMimic.h.
-	INFO_DATA_BLOCK(field_0x10, field_0x10)
+	INFO_DATA_BLOCK(field_0x10, field_0xbc)
 	INFO_ROOT_LOADERS("CreatureMimic.h", 27)
 };
 

@@ -13,7 +13,14 @@
 
 class GameThingWithPos;
 class GPlayer;
+class Reaction;
 class Town;
+struct MapCoords;
+
+#define DEFAULT_BELIEF_CAP         10.0f
+#define BELIEF_LOSS_DRAW_THRESHOLD 0.005
+#define BELIEF_DISTANCE_THRESHOLD  -0.9f
+#define BELIEF_DIFFERENCE_FLOOR    -9999.0f
 
 class GBelief : public Base
 {
@@ -22,12 +29,12 @@ public:
 	static void ProcessOncePerTurn();
 
 	float    BeliefInPlayer[_PLAYER_NAME_COUNT];
-	uint32_t field_0x28[_PLAYER_NAME_COUNT];
-	float    field_0x48[_PLAYER_NAME_COUNT];
+	float    BeliefGained[_PLAYER_NAME_COUNT];
+	uint32_t LastBeliefAddedTurn[_PLAYER_NAME_COUNT];
 	float    BeliefInPlayerMax[_PLAYER_NAME_COUNT];
-	uint32_t field_0x88[_PLAYER_NAME_COUNT];
-	float    field_0xa8[_PLAYER_NAME_COUNT];
-	float    field_0xc8[_PLAYER_NAME_COUNT];
+	float    BeliefInPlayerDelta[_PLAYER_NAME_COUNT];
+	float    BeliefLossPending[_PLAYER_NAME_COUNT];
+	float    BeliefAddedTotal[_PLAYER_NAME_COUNT];
 	float    BoredomMultiplier[NUM_REACTION_FUNCTIONS];
 	float    field_0x18c[0x11];
 
@@ -35,15 +42,27 @@ public:
 
 	// BW1W120 00437dd0 BW1M119 010b4960
 	void Init(Town* town);
+	// BW1W120 00437e50 BW1M119 inlined
+	void CopyDesireAffectsBeliefAfter();
 	// BW1W120 00437e70 BW1M119 010b4910
-	float GetBeliefInPlayer(unsigned long param_1);
+	float GetBeliefInPlayer(unsigned long player_number);
 	// BW1W120 00437e90 BW1M119 0105f3a0
 	float GetBeliefInPlayer(GPlayer* player);
 	// BW1W120 00437eb0 BW1M119 0109b8e0
-	void AddToBelief(GPlayer* player, float amount, GameThingWithPos* object, int param_4,
+	void AddToBelief(GPlayer* player, float amount, GameThingWithPos* object, int draw_belief,
 	                 GUIDANCE_ALIGNMENT alignment);
+	// BW1W120 00437f40 BW1M119 inlined
+	void fn_00437F40(GPlayer* player, MapCoords* pos, GUIDANCE_ALIGNMENT alignment);
+	// BW1W120 00437fd0 BW1M119 010b46f0
+	void ReduceBelief(GPlayer* player, Town* town, float amount);
+	// BW1W120 00438060 BW1M119 inlined
+	float GetBeliefInPlayerDelta(unsigned long player_number);
+	// BW1W120 00438790 BW1M119 01002610
+	void AddToBoredomMultiplier(Reaction* reaction, float amount);
+	// BW1W120 00438800 BW1M119 010a0330
+	void DrawBelief(float amount, GameThingWithPos* object, GPlayer* player);
 	// BW1W120 00438770 BW1M119 010b4310
-	static float DistanceChangeToBelief(float param_1, float param_2);
+	static float DistanceChangeToBelief(float distance, float radius);
 	// BW1W120 004387d0 BW1M119 010b4200
 	void SetBelief(unsigned long index, float value);
 	// BW1W120 00438910 BW1M119 010b4080

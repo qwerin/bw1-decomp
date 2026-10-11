@@ -7,6 +7,8 @@
 
 #include <Lionhead/LHLib/ver5.0/LHListNode.h> /* For LHListNode */
 
+#include <re_common.h> /* For bool32_t */
+
 #include "Base.h" /* For struct Base, struct BaseVftable */
 
 // Forward Declares
@@ -73,6 +75,10 @@ public:
 
 	// Non-virtual methods
 
+	// BW1W120 00436b50 BW1M119 010460a0
+	bool32_t IsValid() const;
+	// BW1W120 00436b80 BW1M119 01046120
+	Base* GetBase() const;
 	// BW1W120 00436bb0 BW1M119 01001410
 	void Set(Base* base);
 };

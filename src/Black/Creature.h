@@ -92,6 +92,8 @@ struct CreatureEmotionsForMusic
 	uint32_t field_0x4;
 };
 
+#define CREATURE_SCRIPT_FOCUS_OBJECT_ARGUMENT 2.0f
+
 class Creature : public Living
 {
 public:
@@ -419,7 +421,7 @@ public:
 	// BW1W120 00477ec0 BW1M119 011e1980
 	virtual float GetFacingDirection();
 	// BW1W120 004f6760 BW1M119 0128db10
-	virtual void SetFocus(const LHPoint& param_1);
+	virtual void SetFocus(const LHPoint& focus);
 	// BW1W120 00473f50 BW1M119 011ea350
 	virtual bool32_t IsReachable();
 	// BW1W120 00479e50 BW1M119 011de170
@@ -993,7 +995,7 @@ public:
 	// BW1W120 004f6e30 BW1M119 0128d0e0
 	void ScriptPlayIndividualAnimation(unsigned long anim);
 	// BW1W120 004f6f10 BW1M119 0128cfa0
-	void ScriptPlayStaticAnimation(unsigned long anim, float param_2);
+	void ScriptPlayStaticAnimation(unsigned long anim, float duration);
 };
 
 class Creed : public MobileObject

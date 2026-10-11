@@ -6,12 +6,14 @@
 
 #include <re_common.h> /* For bool32_t */
 
-#include "Base.h" /* For struct Base */
+#include "Base.h"      /* For struct Base */
+#include "Influence.h" /* For enum INFL_CALC_TYPE */
 
 // Forward Declares
 
 class GInterfaceStatus;
 class Object;
+struct MapCoords;
 
 class GVirtualInfluence : public Base
 {
@@ -41,6 +43,11 @@ public:
 
 	// BW1W120 0076cd10 BW1M119 01162840
 	virtual ~GVirtualInfluence();
+
+	// Non-virtual methods
+
+	// BW1W120 0076d330 BW1M119 0104cf50
+	float GetInterfaceStatusInfluence(const MapCoords& pos, INFL_CALC_TYPE type);
 
 	// Constructors
 
