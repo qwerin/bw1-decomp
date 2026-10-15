@@ -56,6 +56,7 @@ CODE_CHECKS = [
     (r"\b[a-z]Var\d+\b|\b(?:local|in|stack)_[0-9a-fA-F]+\b", f"Hex-Rays/Ghidra local placeholder ({RULES}: Name parameters)"),
     (r"\b[A-Za-z]\w*_(?:0x)?[0-9a-fA-F]{6,8}\b", f"address-suffixed name: find the real or a clear name ({RULES})"),
     (r"\b(?!field_)[A-Za-z_]\w*0x[0-9a-fA-F]{2,}\b", f"offset in a name: name the member by its role ({RULES})"),
+    (r"^\s*do\s*(?:\{\s*)?$|^\s*\}\s*while\s*\(", f"do/while loop: often a decompiler artifact; write the loop as a person would ({RULES})"),
     (rf"\(\s*{CAST_TYPES}\s*\)\s*(?!const\b)[\w(]", f"C cast: often hides a wrong declaration; keep only if codegen needs it ({STYLE})"),
 ]
 

@@ -606,6 +606,10 @@ draw these comments; it is a reviewer's aid, every hit needs a judgement.
 - **Rename the placeholders your code uses.** New code that reads a `field_0x…`, `param_N` or
   offset-named member (`Material0x58`) renames it in the same PR (#494). An address- or
   offset-suffixed name (`GetDistanceInMetres_0074cd50`) is not a name (#501).
+- **Write loops as a person would.** Ghidra's `do { … } while (count != 0)` over a constant
+  count is a decompiler artifact (#501). Write `while`/`for` in the shape the sibling code
+  uses (`Villager::LookAroundForVillagerInState`): with a non-zero constant start the codegen is
+  the same, while an up-counting `for (i = 0; i < n; i++)` may not be when the target counts down.
 - **Related values are an enum.** A set of values for one property
   (`LIVING_LOOK_AT_SPEED_SLOW`/`_NORMAL`/`_FAST`) is a named enum in the owning header, not a
   run of `#define`s (#501).
